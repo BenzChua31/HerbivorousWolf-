@@ -1,0 +1,43 @@
+BGM Source: https://www.chosic.com/free-music/
+SFX Source: https://sfxr.me/
+SFX Source: https://pixabay.com/sound-effects/search/static/
+
+Theme: Funny Spooky kinda vibe
+
+Idea: Wolf and Evil rabbits 
+
+Main Menu BGM: 64 Sundays 
+
+BGM:
+: Beginning of each game 
+     - The floor is paused for a few seconds to let the song play before starting
+     - Spook4 opening
+
+: When enemies are in normal state
+     - This will remain playing during the entire game unless in panic state
+     - Foam Rubber in normal pace
+
+: When enemies are in panic state
+     - This will lasts only for the duration of the panic state/buff 
+     - Foam Rubber in faster pace (signify panic)
+
+: When player 'kills/eats' an enemy
+     - This will lasts for 1-2 seconds after eating the enemy
+     - It will override the panic state bgm during this duration
+     - Spook4, somewhere in between, there is an ending-like song
+
+SFX:
+: When player is consuming pellets/points 
+     - Only when player has consume a point, each point triggers the SFX once
+     - Custom Sound: EatPellet.wav
+
+: When player is moving but not consuming any pellets
+     - This sound should be subtle (since there is already a bgm playing)
+     - Rusting Leaves sound (fox rustling through leaves)
+
+: When a player collides with a wall
+     - Custom Sound: KnockWall.wav
+
+: When player dies/loses
+     - End SFX (Die SFX) not the outro song
+     - Custom Sound: Perish.wav
