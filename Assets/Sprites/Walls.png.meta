@@ -109,8 +109,8 @@ TextureImporter:
       name: Walls_0
       rect:
         serializedVersion: 2
-        x: 27
-        y: 135
+        x: 6
+        y: 334
         width: 7
         height: 43
       alignment: 0
@@ -120,8 +120,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 45ae5b8ab416b8842afee3aacb8d9264
-      internalID: 115048273
+      spriteID: a68c5eadfbaa03748aa214d2ed140acb
+      internalID: -1504923261
       vertices: []
       indices: 
       edges: []
@@ -130,10 +130,10 @@ TextureImporter:
       name: Walls_1
       rect:
         serializedVersion: 2
-        x: 70
-        y: 135
-        width: 43
-        height: 43
+        x: 190
+        y: 371
+        width: 7
+        height: 7
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: b79be2d7504797f43a38f0221970627c
-      internalID: 889760652
+      spriteID: b3005cb65c703574384eaccf75d9dd30
+      internalID: -775167766
       vertices: []
       indices: 
       edges: []
@@ -151,10 +151,10 @@ TextureImporter:
       name: Walls_2
       rect:
         serializedVersion: 2
-        x: 6
-        y: 71
-        width: 43
-        height: 43
+        x: 26
+        y: 187
+        width: 13
+        height: 19
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -162,8 +162,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f13866c3c5a242e4cbd459bb55a610ba
-      internalID: 709201382
+      spriteID: 88e6964c51976634d80c31f8d7540a0b
+      internalID: -34804551
       vertices: []
       indices: 
       edges: []
@@ -172,10 +172,10 @@ TextureImporter:
       name: Walls_3
       rect:
         serializedVersion: 2
-        x: 64
-        y: 74
-        width: 63
-        height: 43
+        x: 53
+        y: 48
+        width: 4
+        height: 35
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -183,8 +183,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1e2a6318c190ed84ea206b8cceeaa21e
-      internalID: -1532284517
+      spriteID: b7e9cf2e992745d47a5e28b41ec8cc6a
+      internalID: 1824810708
       vertices: []
       indices: 
       edges: []
@@ -193,10 +193,10 @@ TextureImporter:
       name: Walls_4
       rect:
         serializedVersion: 2
-        x: 29
-        y: 16
-        width: 4
-        height: 43
+        x: 379
+        y: 130
+        width: 3
+        height: 7
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -204,8 +204,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 580b5bae24e9d10408dc6cba6fab47f5
-      internalID: 671722381
+      spriteID: 2929362f66802fa47b188d8a775f5fb2
+      internalID: -809113384
       vertices: []
       indices: 
       edges: []
@@ -221,11 +221,11 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      Walls_0: 115048273
-      Walls_4: 671722381
-      Walls_3: -1532284517
-      Walls_1: 889760652
-      Walls_2: 709201382
+      Walls_0: -1504923261
+      Walls_4: -809113384
+      Walls_3: 1824810708
+      Walls_1: -775167766
+      Walls_2: -34804551
   spritePackingTag: 
   pSDRemoveMatte: 0
   userData: 
