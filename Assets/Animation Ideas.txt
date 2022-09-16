@@ -1,0 +1,16 @@
+Wolf Fades Away - Pairs with the "Perish" SFX
+Bunny Fades Away - Have a generalized death style. 
+
+But bunny will turn into a bone first before perishing similar to the Ghosts. 
+- Also seems more natural to turn it into a bone. 
+
+Wolf Eat and Close. Quite similar to Pac-Man. 
+- Rotate Wolf to face the direction it is going towards.
+
+Bunny split into 3 types: Normal, Panic/Scared, Recover
+- Each one will rotate to face the direction it is moving towards
+- Normal has no animation while moving, similar to the game. 
+- Panic has no animation while moving too but eyes are now blue in color. 
+- Recover flashes for a few times using opacity. 
+
+Only the berry will flash. Other fruits/meat won't. 
