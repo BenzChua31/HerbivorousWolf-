@@ -8,8 +8,9 @@ public class LevelGenerator : MonoBehaviour
     [SerializeField] private GameObject levelToRemove;
     [SerializeField] private List<GameObject> walls;
     private int[,] map;
-    private const float topLx = -16.91f;
-    private const float topLy = 17.07f;
+    // Position relative to topL quadrant
+    private const float topLx = -20.5f;
+    private const float topLy = 10.5f;
 
     // Start is called before the first frame update
     void Start()
@@ -17,6 +18,8 @@ public class LevelGenerator : MonoBehaviour
         Destroy(levelToRemove);
 
         // Paste your map here
+        // Also if u r willing to, please give me feedback on my code, as in the algorithm used or tidiness or best practices... 
+        // Since GameDev is an elective for me, I'm primarily interested in Backend Software Development
         this.map = new int[,] 
                     {
                     {1,2,2,2,2,2,2,2,2,2,2,2,2,7},
@@ -38,10 +41,12 @@ public class LevelGenerator : MonoBehaviour
 
         // Map/Level 
         GameObject generatedLevel = new GameObject("generatedLevel");
+        Transform transformGL = generatedLevel.GetComponent<Transform>();
 
         // Create the TopL Quadrant first
         GameObject topL = new GameObject("topL");
-        topL.GetComponent<Transform>().SetParent(generatedLevel.GetComponent<Transform>());
+        topL.GetComponent<Transform>().SetParent(transformGL, false);
+        topL.GetComponent<Transform>().position = new Vector3(7, 4, 0);
 
         // Proceed to step through array
         for (int j = 0; j < map.GetLength(0); j++) // 15 rows
@@ -59,7 +64,39 @@ public class LevelGenerator : MonoBehaviour
             }
         }
 
+        // Simply dupe the quadrants and modify its position
+        // TopL : 7 4 0
+        // TopR : -7 4 0
+        // BotL : 7 -3 0
+        // BotR : -7 -3 0
+        // We need to delete the last row of BotL and BotR (a loop to check and delete for all elements with -3.5y position)
+
+        GameObject topR = Instantiate(topL, new Vector3(-7, 4, 0), Quaternion.Euler(new Vector3(0, 180.0f, 0)));
+        topR.name = "topR";
+        topR.GetComponent<Transform>().SetParent(transformGL, false);
+
+        GameObject botL = Instantiate(topL, new Vector3(7, -3, 0), Quaternion.Euler(new Vector3(0, 180.0f, 180.0f)));
+        botL.name = "botL";
+        botL.GetComponent<Transform>().SetParent(transformGL, false);
+
+        foreach (Transform transform in botL.GetComponent<Transform>())
+        {
+            if (transform.position.y == -3.5f)
+            {
+                Destroy(transform.gameObject);
+            }
+        }
+
+        // We dupe botL so that we can save a for-loop check
+        GameObject botR = Instantiate(botL, new Vector3(-7, -3, 0), Quaternion.Euler(new Vector3(0, 0, 180.0f)));
+        botR.name = "botR";
+        botR.GetComponent<Transform>().SetParent(transformGL, false);
+
+
     }
+
+    /* ---------------------------------------------------------------------------------------------- */
+    // Make elements' position be in relation to their corresponding quadrant GameObject
 
     // 0 - No rotation, 1 - Rotate Z90, 2 - Rotate Z180, 3 - Rotate Z270
     private void CreateOuterC(int i, int j, Transform parent)
@@ -72,7 +109,7 @@ public class LevelGenerator : MonoBehaviour
         else if (rotation == 3) z = 270;
 
         GameObject wall = Instantiate(walls[1], new Vector3(topLx + i, topLy - j, 0.0f), Quaternion.Euler(0, 0, z));
-        wall.GetComponent<Transform>().SetParent(parent, true);
+        wall.GetComponent<Transform>().SetParent(parent, false);
     }
 
     // 0 - No Rotation, 1 - Z90
@@ -84,7 +121,7 @@ public class LevelGenerator : MonoBehaviour
         if (rotation == 1) z = 90;
 
         GameObject wall = Instantiate(walls[2], new Vector3(topLx + i, topLy - j, 0.0f), Quaternion.Euler(0, 0, z));
-        wall.GetComponent<Transform>().SetParent(parent, true);
+        wall.GetComponent<Transform>().SetParent(parent, false);
     }
 
     // 0 - No rotation, 1 - Rotate Z90, 2 - Rotate Z180, 3 - Rotate Z270
@@ -98,7 +135,7 @@ public class LevelGenerator : MonoBehaviour
         else if (rotation == 3) z = 270;
 
         GameObject wall = Instantiate(walls[3], new Vector3(topLx + i, topLy - j, 0.0f), Quaternion.Euler(0, 0, z));
-        wall.GetComponent<Transform>().SetParent(parent, true);
+        wall.GetComponent<Transform>().SetParent(parent, false);
     }
 
     // 0 - No rotation, 1 - Rotate Z90, 2 - Rotate Z180, 3 - Rotate Z270
@@ -112,19 +149,19 @@ public class LevelGenerator : MonoBehaviour
         else if (rotation == 3) z = 270;
 
         GameObject wall = Instantiate(walls[4], new Vector3(topLx + i, topLy - j, 0.0f), Quaternion.Euler(0, 0, z));
-        wall.GetComponent<Transform>().SetParent(parent, true);
+        wall.GetComponent<Transform>().SetParent(parent, false);
     }
 
     private void CreateBerry(int i, int j, Transform parent)
     {
         GameObject berry = Instantiate(walls[5], new Vector3(topLx + i, topLy - j, 0.0f), Quaternion.identity);
-        berry.GetComponent<Transform>().SetParent(parent, true);
+        berry.GetComponent<Transform>().SetParent(parent, false);
     }
 
     private void CreateMeat(int i, int j, Transform parent)
     {
         GameObject meat = Instantiate(walls[6], new Vector3(topLx + i, topLy - j, 0.0f), Quaternion.identity);
-        meat.GetComponent<Transform>().SetParent(parent, true);
+        meat.GetComponent<Transform>().SetParent(parent, false);
     }
 
     // 0 - No Rotation, 1 - Z90, 2 - Z180, 3 - Z270
@@ -144,7 +181,7 @@ public class LevelGenerator : MonoBehaviour
         else if (rotation == 7) { y = 180; z = 270; }
 
         GameObject wall = Instantiate(walls[7], new Vector3(topLx + i, topLy - j, 0.0f), Quaternion.Euler(0, y, z));
-        wall.GetComponent<Transform>().SetParent(parent, true);
+        wall.GetComponent<Transform>().SetParent(parent, false);
     }
 
     // 0 - No rotation, 1 - Rotate Z90, 2 - Rotate Z180, 3 - Rotate Z270
@@ -347,7 +384,8 @@ public class LevelGenerator : MonoBehaviour
             int sval = map[sj, si];
 
             // Assuming TCon can connect the outer wall/corner to the inner wall/corner
-            // Assuming TCon can't connect to another TCon
+            // Assuming TCon can't connect to another TCon 
+            // If there are two adjacent TCon walls, they aren't connected, just simply beside each other. 
             if ((fval == 1 || fval == 2) && (sval == 3 || sval == 4)) {
                 if (x == 0) return 7;
                 if (x == 1) return 4;
@@ -374,12 +412,11 @@ public class LevelGenerator : MonoBehaviour
 
 // Things to Note: 
 // Each grid is 1 unit long 
-// TopL Corner: -16.91x, 17.07y
-// TopR Corner: 10.09x, 17.07y | Rotation around Z-axis by 270
-// BotR Corner: 10.09x, -10.93y | Rotation by 180
-// BotL Corner: -16.91x, -10.93y | Rotation by 90
-// Width is 27 units (13.5 Per Quadrant) 
-// Height is 28 units (14 Per Quadrant)
+// For TopL Quadrant: 
+// TopL Corner: -20.5x, 10.5y
+// TopR Corner: -6.5x, 10.5y | Rotation around Z-axis by 270
+// BotR Corner: -7.5x, -3.5y | Rotation by 180
+// BotL Corner: -20.5x, -3.5y | Rotation by 90
 // Corners can be adjacent to each other
 // All tiles/walls are 1,1,1 scale
 
