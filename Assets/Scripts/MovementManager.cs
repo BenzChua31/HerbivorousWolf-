@@ -25,23 +25,23 @@ public class MovementManager : MonoBehaviour
             float y = iTransform.position.y;
             if (x == -12.5f && y == 9.5f)
             {
-                iTransform.rotation = Quaternion.Euler(0, 0, 0);
-                AddTween(new Vector3(-7.5f, 9.5f, 0.0f), 3.0f); // BL --> BR
+                iTransform.rotation = Quaternion.Euler(0, 0, 90.0f);
+                AddTween(new Vector3(-12.5f, 13.5f, 0.0f), 3.0f); // BL --> TL
             }
             else if (x == -7.5f && y == 9.5f)
             {
-                iTransform.rotation = Quaternion.Euler(0, 0, 90.0f);
-                AddTween(new Vector3(-7.5f, 13.5f, 0.0f), 2.0f); // BR --> TR
+                iTransform.rotation = Quaternion.Euler(0, 180.0f, 0);
+                AddTween(new Vector3(-12.5f, 9.5f, 0.0f), 3.0f); // BR --> BL
             }
             else if (x == -7.5f && y == 13.5f)
             {
-                iTransform.rotation = Quaternion.Euler(0, 180.0f, 0);
-                AddTween(new Vector3(-12.5f, 13.5f, 0.0f), 3.0f); // TR --> TL
+                iTransform.rotation = Quaternion.Euler(0, 0, 270.0f);
+                AddTween(new Vector3(-7.5f, 9.5f, 0.0f), 3.0f); // TR --> BR
             }
             else if (x == -12.5f && y == 13.5f)
             {
-                iTransform.rotation = Quaternion.Euler(0, 0, 270.0f);
-                AddTween(new Vector3(-12.5f, 9.5f, 0.0f), 2.0f); // TL --> BL
+                iTransform.rotation = Quaternion.Euler(0, 0, 0);
+                AddTween(new Vector3(-7.5f, 13.5f, 0.0f), 3.0f); // TL --> TR
             }
         }
     }

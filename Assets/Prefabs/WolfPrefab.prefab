@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 760186842785853423}
   - component: {fileID: 760186842785853416}
-  - component: {fileID: 760186842785853417}
+  - component: {fileID: 3790116007010822233}
   m_Layer: 0
   m_Name: WolfPrefab
   m_TagString: Untagged
@@ -85,7 +85,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!95 &760186842785853417
+--- !u!95 &3790116007010822233
 Animator:
   serializedVersion: 4
   m_ObjectHideFlags: 0
