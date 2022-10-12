@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Tweener : MonoBehaviour
 {
-    [SerializeField] private AudioSource rustlingLeaves;
+    public AudioSource rustlingLeaves;
     private List<Tween> activeTweens;
     // private Sequence sequence;
 
@@ -29,7 +29,7 @@ public class Tweener : MonoBehaviour
 
             if (activeTween != null)
             {
-                PlayMovementAudio(); // Play Audio at start of tween (temporary)
+                if (rustlingLeaves != null) { PlayMovementAudio(); } // Play Audio at start of tween (temporary)
                 Vector3 current = activeTween.Target.position;
                 Vector3 start = activeTween.StartPos;
                 Vector3 end = activeTween.EndPos;

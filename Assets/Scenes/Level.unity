@@ -13282,13 +13282,13 @@ MonoBehaviour:
   levelToRemove: {fileID: 351235806}
   walls:
   - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 3943154366707230833, guid: f0beaf4abedfa6c4ca8e9d12ca834cdb, type: 3}
+  - {fileID: 2614838179476607389, guid: fbc717c7385eb6146ae5f89c19199015, type: 3}
+  - {fileID: 6953268869914925054, guid: 1397ccf061e648b46a297222024134ea, type: 3}
+  - {fileID: 8073903961537446426, guid: aa7e0594cea72a142a21148fe0952a53, type: 3}
+  - {fileID: 452509961533975606, guid: f252d5b4ff93c1140a8f8e7ba3efa8dd, type: 3}
+  - {fileID: 1402161904895303214, guid: f1bd90aa3fee0a64990b34c6bc2cf53a, type: 3}
+  - {fileID: 8673044178968857411, guid: 7d58530e93362ef4587987c6554d5034, type: 3}
 --- !u!4 &1058700930
 Transform:
   m_ObjectHideFlags: 0

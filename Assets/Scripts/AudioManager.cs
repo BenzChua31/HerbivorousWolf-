@@ -7,10 +7,12 @@ public class AudioManager : MonoBehaviour
 
     public AudioSource[] audios;
     private AudioSource song;
+    private GameObject managers;
 
     // Start is called before the first frame update
     void Start()
     {
+        managers = GameObject.FindWithTag("Managers");
         song = audios[0];
         song.Play();
         Invoke("nextSong", song.clip.length);
@@ -19,7 +21,7 @@ public class AudioManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        // I WANT TO MAKE IT SO THAT THE MUSIC PLAYS AFTER LOADING SCREEN DROPS DOWN rather than few seconds b4 it drops down
     }
 
 
