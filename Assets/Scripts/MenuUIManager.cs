@@ -57,7 +57,7 @@ public class MenuUIManager : MonoBehaviour
 
         while (elapsedTime < duration)
         {
-            loadingT.anchoredPosition = Vector3.Lerp(loadingT.anchoredPosition, new Vector2(0.0f, -23.0f), elapsedTime / duration);
+            loadingT.anchoredPosition = Vector3.Lerp(loadingT.anchoredPosition, new Vector2(0.0f, -510.0f), elapsedTime / duration);
             elapsedTime += Time.deltaTime;
 
             yield return null;

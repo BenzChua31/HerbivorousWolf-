@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class AudioManager : MonoBehaviour
 {
@@ -12,18 +13,21 @@ public class AudioManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        managers = GameObject.FindWithTag("Managers");
         song = audios[0];
-        song.Play();
-        Invoke("nextSong", song.clip.length);
+        managers = GameObject.FindWithTag("Managers");
     }
 
     // Update is called once per frame
     void Update()
     {
-        // I WANT TO MAKE IT SO THAT THE MUSIC PLAYS AFTER LOADING SCREEN DROPS DOWN rather than few seconds b4 it drops down
-    }
 
+        if (managers.GetComponent<MenuUIManager>().loadingT.anchoredPosition.y <= -500.0f && song.isPlaying == false)
+        {
+            managers.GetComponentInChildren<AudioSource>().Stop();
+            song.Play();
+            Invoke("nextSong", song.clip.length);
+        }
+    }
 
     // For now it should loop the same normal state BGM song over and over again
     void nextSong()
@@ -31,6 +35,6 @@ public class AudioManager : MonoBehaviour
         song.Stop();
         song = audios[1];
         song.Play();
-        Invoke("nextSong", song.clip.length);
+        song.loop = true;
     }
 }
