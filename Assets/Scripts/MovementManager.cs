@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Not used anymore, Part of Assignment 3
 public class MovementManager : MonoBehaviour
 {
     [SerializeField] private List<GameObject> itemList;

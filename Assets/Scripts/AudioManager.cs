@@ -2,38 +2,62 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class AudioManager : MonoBehaviour
 {
 
     public AudioSource[] audios;
     private AudioSource song;
-    private GameObject managers;
 
     // Start is called before the first frame update
     void Start()
     {
-        song = audios[0];
-        managers = GameObject.FindWithTag("Managers");
+        song = audios[4]; // Initially, Main Menu audio will be playing
     }
 
     // Update is called once per frame
     void Update()
     {
 
-        if (managers.GetComponent<MenuUIManager>().loadingT.anchoredPosition.y <= -500.0f && song.isPlaying == false)
+    }
+
+    public void playMainMenu()
+    {
+        playSong(4);
+    }
+
+    public void playLevel()
+    {
+        if (!audios[0].isPlaying && !audios[1].isPlaying)
         {
-            managers.GetComponentInChildren<AudioSource>().Stop();
+            song.Stop();
+            song = audios[0];
             song.Play();
-            Invoke("nextSong", song.clip.length);
+            Invoke("playGameSong", song.clip.length);
         }
     }
 
-    // For now it should loop the same normal state BGM song over and over again
-    void nextSong()
+    public void playRustlingLeaves()
+    {
+        audios[5].Play();
+        audios[5].loop = true;
+    }
+
+    public void stopRustlingLeaves()
+    {
+        audios[5].Stop();
+    }
+
+    private void playGameSong()
+    {
+        playSong(1);
+    }
+
+    private void playSong(int index)
     {
         song.Stop();
-        song = audios[1];
+        song = audios[index];
         song.Play();
         song.loop = true;
     }

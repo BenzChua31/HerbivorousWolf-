@@ -1,18 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-// using DG.Tweening;
 
+// Tweener itself allows us to execute frame-rate independent motion
 public class Tweener : MonoBehaviour
 {
-    public AudioSource rustlingLeaves;
+    private AudioManager audioManager;
     private List<Tween> activeTweens;
-    // private Sequence sequence;
 
     // Start is called before the first frame update
     void Start()
     {
         activeTweens = new List<Tween>();
+        audioManager = GameObject.FindWithTag("Managers").GetComponent<AudioManager>();
     }
 
     // Update is called once per frame
@@ -24,12 +24,11 @@ public class Tweener : MonoBehaviour
 
             float timer = activeTween.TimeElapsed;
             timer += Time.deltaTime; 
-            // This should make it so that it is frame-rate independent.
-            // If frame rate is slow, then time between each frame would be longer
 
             if (activeTween != null)
             {
-                if (rustlingLeaves != null) { PlayMovementAudio(); } // Play Audio at start of tween (temporary)
+                Debug.Log("Play");
+                if (GameStateManager.currentScene == GameStateManager.SceneType.Level) { audioManager.playRustlingLeaves(); }
                 Vector3 current = activeTween.Target.position;
                 Vector3 start = activeTween.StartPos;
                 Vector3 end = activeTween.EndPos;
@@ -47,6 +46,7 @@ public class Tweener : MonoBehaviour
                 if (currDist <= 0.1f)
                 {
                     activeTween.Target.position = activeTween.EndPos;
+                    if (GameStateManager.currentScene == GameStateManager.SceneType.Level) { audioManager.stopRustlingLeaves(); }
                     activeTweens.Remove(activeTween);
                 }
             }
@@ -80,11 +80,9 @@ public class Tweener : MonoBehaviour
         return false;
     }
 
-    private void PlayMovementAudio()
+    public void RemoveAllTweens()
     {
-        rustlingLeaves.Stop();
-        rustlingLeaves.Play();
-        rustlingLeaves.loop = true;
+        activeTweens.Clear();
     }
 
 }
