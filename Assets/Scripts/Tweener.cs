@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 // Tweener itself allows us to execute frame-rate independent motion
 public class Tweener : MonoBehaviour
@@ -27,7 +28,8 @@ public class Tweener : MonoBehaviour
 
             if (activeTween != null)
             {
-                if (GameStateManager.currentScene == GameStateManager.SceneType.Level) { audioManager.playRustlingLeaves(); }
+                // Make sure the LevelScene has been loaded
+                if (SceneManager.GetActiveScene() == SceneManager.GetSceneByBuildIndex(0)) { audioManager.playRustlingLeaves(); }
                 Vector3 current = activeTween.Target.position;
                 Vector3 start = activeTween.StartPos;
                 Vector3 end = activeTween.EndPos;
@@ -45,7 +47,7 @@ public class Tweener : MonoBehaviour
                 if (currDist <= 0.1f)
                 {
                     activeTween.Target.position = activeTween.EndPos;
-                    if (GameStateManager.currentScene == GameStateManager.SceneType.Level) { audioManager.stopRustlingLeaves(); }
+                    if (SceneManager.GetActiveScene() == SceneManager.GetSceneByBuildIndex(0)) { audioManager.stopRustlingLeaves(); }
                     activeTweens.Remove(activeTween);
                 }
             }

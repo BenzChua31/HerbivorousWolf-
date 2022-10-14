@@ -2,29 +2,39 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-
+    private static UIManager itself;
     public RectTransform loadingTitle;
     public RectTransform loadingCanva;
     private AudioManager audioManager;
-    private bool ongoingCoroutine;
+    // private bool ongoingCoroutine;
+
+    private void Awake()
+    {
+        // Make it so that we will only have one instance of UIManager (Singleton approach)
+        if (!itself) { itself = this;  DontDestroyOnLoad(gameObject); }
+        else { Destroy(gameObject); } 
+    }
 
     // Start is called before the first frame update
     void Start()
     {
+        GameObject.FindWithTag("Lvl1Btn").GetComponent<Button>().onClick.AddListener(LoadFirst);
         // Sets the top and bottom of the loadingTitle
         loadingTitle.offsetMin = new Vector2(loadingTitle.offsetMin.x, -loadingCanva.rect.height);
         loadingTitle.offsetMax = new Vector2(loadingTitle.offsetMax.x, -loadingCanva.rect.height);
         audioManager = gameObject.GetComponent<AudioManager>();
-        DontDestroyOnLoad(gameObject);
-        ongoingCoroutine = false;
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        // ongoingCoroutine = false;
     }
 
     // Update is called once per frame
     void Update()
     {
+
     }
 
     public void Exit()
@@ -46,11 +56,12 @@ public class UIManager : MonoBehaviour
 
     IEnumerator Loading(int index)
     {
-        ongoingCoroutine = true;
+        // ongoingCoroutine = true;
 
         float elapsedTime = 0.0f;
         float duration = 2.0f;
 
+        setGameState(index);
 
         while (elapsedTime < duration)
         {
@@ -73,7 +84,9 @@ public class UIManager : MonoBehaviour
             loadingTitle.anchoredPosition = Vector3.Lerp(loadingTitle.anchoredPosition, new Vector2(0.0f, -loadingCanva.rect.height - 30.0f), elapsedTime / duration);
             elapsedTime += Time.deltaTime;
 
-            if (played == false) 
+            // Added this because I don't want the music to play onSceneLoad, but when LoadingScreen is sliding off
+            // since the LoadingScreen timing is hard-coded (Could probably check w/ GetCurrentScene for dynamic)
+            if (played == false && GameStateManager.currentScene == GameStateManager.SceneType.Level) 
             {
                 audioManager.playLevel();
                 played = true; // To prevent playLevel from being called more than once
@@ -82,12 +95,23 @@ public class UIManager : MonoBehaviour
             yield return null;
         }
 
-        setGameState(index); // Needs to be here to ensure Main Menu Scene has been unloaded
         ResetLoadingTitle(); // Hopefully by now the Level has been loaded, hard-coded, same for loadingScreen duration anyways
 
-        ongoingCoroutine = false;
+        // ongoingCoroutine = false;
 
         yield return null;
+    }
+
+    public void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.buildIndex == 0)
+        {
+            GameObject.FindWithTag("Exit").GetComponent<Button>().onClick.AddListener(Exit);
+        }
+        else if (scene.buildIndex == 1)
+        {
+            GameObject.FindWithTag("Lvl1Btn").GetComponent<Button>().onClick.AddListener(LoadFirst);
+        }
     }
 
     private void setGameState(int index)

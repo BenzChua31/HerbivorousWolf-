@@ -14,6 +14,8 @@ public class AudioManager : MonoBehaviour
     void Start()
     {
         song = audios[4]; // Initially, Main Menu audio will be playing
+        song.Play();
+        song.loop = true;
     }
 
     // Update is called once per frame
@@ -53,9 +55,12 @@ public class AudioManager : MonoBehaviour
 
     private void playSong(int index)
     {
-        song.Stop();
-        song = audios[index];
-        song.Play();
-        song.loop = true;
+        if (!audios[4].isPlaying) // Set MainMenu to take precedence over others
+        {
+            song.Stop();
+            song = audios[index];
+            song.Play();
+            song.loop = true;
+        }
     }
 }
