@@ -28,6 +28,12 @@ public class Tweener : MonoBehaviour
 
             if (activeTween != null)
             {
+                // REMINDER: Add the eating pellet sound when interacting w/ pellet in the future
+
+                if (activeTween.Target.CompareTag("Wolf")) // Temporary, it should eat only when interacting with a pellet
+                {
+                    activeTween.Target.GetComponent<Animator>().SetBool("Eating", true);
+                }
                 // Make sure the LevelScene has been loaded
                 if (SceneManager.GetActiveScene() == SceneManager.GetSceneByBuildIndex(0)) { audioManager.playRustlingLeaves(); }
                 Vector3 current = activeTween.Target.position;
@@ -44,10 +50,14 @@ public class Tweener : MonoBehaviour
                     activeTween.TimeElapsed = timer;
                 }
 
-                if (currDist <= 0.1f)
+                if (currDist <= 0.06f)
                 {
                     activeTween.Target.position = activeTween.EndPos;
                     if (SceneManager.GetActiveScene() == SceneManager.GetSceneByBuildIndex(0)) { audioManager.stopRustlingLeaves(); }
+                    if (activeTween.Target.CompareTag("Wolf"))
+                    {
+                        activeTween.Target.GetComponent<Animator>().SetBool("Eating", false);
+                    }
                     activeTweens.Remove(activeTween);
                 }
             }
@@ -60,8 +70,7 @@ public class Tweener : MonoBehaviour
         if (TweenExists(targetObject))
         {
             return false;
-            // We have this if-else here to verify that a tween exists for this particular Transform component and therefore, shouldn't interfere with it
-            // until it is done with its motion and removed from the list. This will prevent spam WASD for one GameObject. 
+            // Prevent from adding Tween for that GameObject so that it can only have one tween at a time for it (doesn't stack a list of tweens)
         }
         else
         {

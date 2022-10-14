@@ -7,20 +7,14 @@ public class LevelGenerator : MonoBehaviour
 
     [SerializeField] private GameObject levelToRemove;
     [SerializeField] private List<GameObject> walls;
-    private int[,] map;
+    private static int[,] map;
     // Position relative to topL quadrant
     private const float topLx = -20.5f;
     private const float topLy = 10.5f;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
-        Destroy(levelToRemove);
-
-        // Paste your map here
-        // Also if u r willing to, please give me feedback on my code, as in the algorithm used or tidiness or best practices... 
-        // Since GameDev is an elective for me, I'm primarily interested in Backend Software Development
-        this.map = new int[,] 
+        map = new int[,]
                     {
                     {1,2,2,2,2,2,2,2,2,2,2,2,2,7},
                     {2,5,5,5,5,5,5,5,5,5,5,5,5,4},
@@ -38,6 +32,16 @@ public class LevelGenerator : MonoBehaviour
                     {2,2,2,2,2,1,5,3,3,0,4,0,0,0},
                     {0,0,0,0,0,0,5,0,0,0,4,0,0,0},
                     };
+    }
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        Destroy(levelToRemove);
+
+        // Paste your map here
+        // Also if u r willing to, please give me feedback on my code, as in the algorithm used or tidiness or best practices... 
+        // Since GameDev is an elective for me, I'm primarily interested in Backend Software Development
 
         // Map/Level 
         GameObject generatedLevel = new GameObject("generatedLevel");
@@ -403,9 +407,21 @@ public class LevelGenerator : MonoBehaviour
         return -1;
     }
 
-        private bool IsOutOfBounds(int di, int dj)
+    private bool IsOutOfBounds(int di, int dj)
     {
         return (di < 0 || di >= map.GetLength(1) || dj < 0 || dj >= map.GetLength(0));
+    }
+
+    public static int[,] getMap()
+    {
+        return map.Clone() as int[,];
+        // return a copy of the array
+        // int are value type so this works as a deep copy
+    }
+
+    public static void setMap(int[,] newMap)
+    {
+        map = newMap;
     }
 
 }

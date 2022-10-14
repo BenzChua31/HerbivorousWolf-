@@ -2751,6 +2751,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wolf
       objectReference: {fileID: 0}
+    - target: {fileID: 760186842785853418, guid: 5d5ba57e6a501f948b6b1ca3a989146f, type: 3}
+      propertyPath: m_TagString
+      value: Wolf
+      objectReference: {fileID: 0}
     - target: {fileID: 760186842785853423, guid: 5d5ba57e6a501f948b6b1ca3a989146f, type: 3}
       propertyPath: m_RootOrder
       value: 3

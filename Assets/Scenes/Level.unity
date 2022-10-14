@@ -11639,6 +11639,64 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &858108277
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 858108279}
+  - component: {fileID: 858108278}
+  - component: {fileID: 858108280}
+  m_Layer: 0
+  m_Name: WolfController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &858108278
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 858108277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00aac9ab1ee60e54e9dc01abe0e2d187, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wolf: {fileID: 1785344598}
+--- !u!4 &858108279
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 858108277}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -6.3942633, y: 9.13733, z: 0.84108704}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 11
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &858108280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 858108277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22f44eb8e52a25e4aadeee33c80dd02e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &858636513
 GameObject:
   m_ObjectHideFlags: 0
@@ -12990,6 +13048,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WolfMovement
       objectReference: {fileID: 0}
+    - target: {fileID: 760186842785853418, guid: 5d5ba57e6a501f948b6b1ca3a989146f, type: 3}
+      propertyPath: m_TagString
+      value: Wolf
+      objectReference: {fileID: 0}
     - target: {fileID: 760186842785853423, guid: 5d5ba57e6a501f948b6b1ca3a989146f, type: 3}
       propertyPath: m_RootOrder
       value: 2
@@ -14130,6 +14192,7 @@ MonoBehaviour:
   - {fileID: 452509961533975606, guid: f252d5b4ff93c1140a8f8e7ba3efa8dd, type: 3}
   - {fileID: 1402161904895303214, guid: f1bd90aa3fee0a64990b34c6bc2cf53a, type: 3}
   - {fileID: 8673044178968857411, guid: 7d58530e93362ef4587987c6554d5034, type: 3}
+  - {fileID: 4792955454011862841, guid: ad46a37e65223f343b7eeeead06855e7, type: 3}
 --- !u!4 &1058700930
 Transform:
   m_ObjectHideFlags: 0
