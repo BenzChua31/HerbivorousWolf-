@@ -29,13 +29,10 @@ public class AudioManager : MonoBehaviour
 
     public void playLevel()
     {
-        if (!audios[0].isPlaying && !audios[1].isPlaying)
-        {
-            song.Stop();
-            song = audios[0];
-            song.Play();
-            Invoke("playGameSong", song.clip.length);
-        }
+        song.Stop();
+        song = audios[0];
+        song.Play();
+        Invoke("playGameSong", song.clip.length);
     }
 
     public void playRustlingLeaves()

@@ -27,7 +27,6 @@ public class Tweener : MonoBehaviour
 
             if (activeTween != null)
             {
-                Debug.Log("Play");
                 if (GameStateManager.currentScene == GameStateManager.SceneType.Level) { audioManager.playRustlingLeaves(); }
                 Vector3 current = activeTween.Target.position;
                 Vector3 start = activeTween.StartPos;

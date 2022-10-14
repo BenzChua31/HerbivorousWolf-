@@ -25,24 +25,6 @@ public class UIManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-        // Hard-Coded since I want the audio to play when LoadingScreen is done sliding
-
-        float top = loadingTitle.offsetMax.y;
-        float btm = loadingTitle.offsetMin.y;
-        float canvaHeight = loadingCanva.rect.height;
-
-        if (btm <= -canvaHeight + 5.0f && top <= -canvaHeight + 5.0f && GameStateManager.currentScene == GameStateManager.SceneType.Level) 
-            // Get it to play 10.0f before loading reaches the end
-        {
-            audioManager.playLevel();
-        }
-
-        // Need to fix this so that it will only check and play this method once
-        // Issue is when we pause the game, it restarts the audio cuz of the isPlayin checks. 
-        // And before, it kept calling playLevel and restarting the music
-
-
     }
 
     public void Exit()
@@ -84,11 +66,18 @@ public class UIManager : MonoBehaviour
 
         elapsedTime = 0.0f;
         duration = 2.0f;
+        bool played = false;
 
         while (elapsedTime < duration)
         {
             loadingTitle.anchoredPosition = Vector3.Lerp(loadingTitle.anchoredPosition, new Vector2(0.0f, -loadingCanva.rect.height - 30.0f), elapsedTime / duration);
             elapsedTime += Time.deltaTime;
+
+            if (played == false) 
+            {
+                audioManager.playLevel();
+                played = true; // To prevent playLevel from being called more than once
+            }
 
             yield return null;
         }
