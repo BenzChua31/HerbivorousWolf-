@@ -50,7 +50,7 @@ public class Tweener : MonoBehaviour
                     activeTween.TimeElapsed = timer;
                 }
 
-                if (currDist <= 0.06f)
+                if (currDist <= 0.1f)
                 {
                     activeTween.Target.position = activeTween.EndPos;
                     if (SceneManager.GetActiveScene() == SceneManager.GetSceneByBuildIndex(0)) { audioManager.stopRustlingLeaves(); }
@@ -81,12 +81,10 @@ public class Tweener : MonoBehaviour
 
     public bool TweenExists(Transform target)
     {
-        // loops through whole list to find the matching tween if any (compare by reference)
         foreach (Tween activeTween in activeTweens)
         {
             if (activeTween.Target == target) { return true; }
         }
-
         return false;
     }
 

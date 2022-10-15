@@ -45,7 +45,7 @@ public class PacStudentController : MonoBehaviour
         }
 
         int statusL = Move(lastInput);
-        if (statusL == 0)
+        if (statusL == 0) // if checkWalkable returns a false, then we execute this
         {
             Move(currentInput); // shuld naturally stop if no possible motion can be made
         }
@@ -59,6 +59,7 @@ public class PacStudentController : MonoBehaviour
 
         int row = currentPos[0];
         int col = currentPos[1];
+        // Debug.Log(row + " " + col); Coordinate tested, works 100%
 
         // The tweener will deny addition if an existing tween exists 
         if (inputType.Equals("W"))
@@ -84,174 +85,193 @@ public class PacStudentController : MonoBehaviour
 
     private int MoveUp(Transform transform, Vector3 pos, int row, int col)
     {
-        if (checkTop())
+        if (!tweener.TweenExists(transform))
         {
-            bool status = tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y + 1.0f), 1.0f);
-            if (status)
+            int adjRow = row;
+            int adjCol = col;
+
+            if (flippedH) { adjRow += 1; }
+            else { adjRow -= 1; }
+
+            int rs = checkWalkable(adjRow, adjCol);
+            if (rs != 0) // The flippedH/V is handled by checkWalkable method
             {
-                // why we need a separate method is because check() just checks for walkability of adjacent tiles
-                // but says nothing about whether the Tween will get add or not
-
-                // (TRY THIS FIRST) check if a TweenExists by using TweenExists and passing in the transform... first
-                // then if no, we can check for the adjacent tiles being walkable or not
-                // in this case, if checkTop() realises that we are entering a mirrored quadrant
-                // it can immediately update flippedH/V since the motion is guaranteed alrdy
-                // and in this case, the coordinates won't change as it is mirrored 
-                // but for example in BL, moving up would be moving down the 2D array
-                // and instead of getting the adjacent coordinates in the check() method, we pass it to them as a parameter
-                // so we don't have to recalculate the direction inside here; we determine direction based on flippedH/V
-                // then we no longer need different check(), just one that checks for walls or is mirrored.
-
-                // use a separate method to check if we are at border
-                // and update the currentPos accordingly along with updating the flippedH/V 
-
-                currentPos[0] = row - 1;
-                currentPos[1] = col;
                 currentInput = "W";
-                return 1;
+                tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y + 1.0f), 1.0f);
+                if (rs == 2)
+                {
+                    currentPos[0] = row;
+                    currentPos[1] = col;
+                    return 1;
+                }
+                else
+                {
+                    currentPos[0] = adjRow;
+                    currentPos[1] = adjCol;
+                    return 1;
+                }
             }
-            return 0;
+            else
+            {
+                return 0;
+            }
         }
         return -1;
     }
 
     private int MoveBtm(Transform transform, Vector3 pos, int row, int col)
     {
-        if (checkBtm())
+        if (!tweener.TweenExists(transform))
         {
-            bool status = tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y - 1.0f), 1.0f);
-            if (status)
+            int adjRow = row;
+            int adjCol = col;
+
+            if (flippedH) { adjRow -= 1; }
+            else { adjRow += 1; }
+
+            int rs = checkWalkable(adjRow, adjCol);
+            if (rs != 0) // The flippedH/V is handled by checkWalkable method
             {
-                currentPos[0] = row + 1;
-                currentPos[1] = col;
                 currentInput = "S";
-                return 1;
+                tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y - 1.0f), 1.0f);
+                if (rs == 2)
+                {
+                    currentPos[0] = row;
+                    currentPos[1] = col;
+                    return 1;
+                }
+                else
+                {
+                    currentPos[0] = adjRow;
+                    currentPos[1] = adjCol;
+                    return 1;
+                }
             }
-            return 0;
+            else
+            {
+                return 0;
+            }
         }
         return -1;
     }
 
     private int MoveLeft(Transform transform, Vector3 pos, int row, int col)
     {
-        if (checkLeft())
+        if (!tweener.TweenExists(transform))
         {
-            bool status = tweener.AddTween(transform, pos, new Vector2(pos.x - 1.0f, pos.y), 1.0f);
-            if (status)
+            int adjRow = row;
+            int adjCol = col;
+
+            if (flippedV) { adjCol += 1; }
+            else { adjCol -= 1; }
+
+            int rs = checkWalkable(adjRow, adjCol);
+            if (rs != 0) // The flippedH/V is handled by checkWalkable method
             {
-                currentPos[0] = row;
-                currentPos[1] = col - 1;
                 currentInput = "A";
-                return 1;
+                tweener.AddTween(transform, pos, new Vector2(pos.x - 1.0f, pos.y), 1.0f);
+                if (rs == 3)
+                {
+                    currentPos[0] = row;
+                    currentPos[1] = col;
+                    return 1;
+                }
+                else
+                {
+                    currentPos[0] = adjRow;
+                    currentPos[1] = adjCol;
+                    return 1;
+                }
             }
-            return 0;
+            else
+            {
+                return 0;
+            }
         }
         return -1;
     }
 
     private int MoveRight(Transform transform, Vector3 pos, int row, int col)
     {
-        if (checkRight())
+        if (!tweener.TweenExists(transform))
         {
-            bool status = tweener.AddTween(transform, pos, new Vector2(pos.x + 1.0f, pos.y), 1.0f);
-            if (status)
+            int adjRow = row;
+            int adjCol = col;
+
+            if (flippedV) { adjCol -= 1; }
+            else { adjCol += 1; }
+
+            int rs = checkWalkable(adjRow, adjCol);
+            if (rs != 0) // The flippedH/V is handled by checkWalkable method
             {
-                currentPos[0] = row;
-                currentPos[1] = col + 1;
                 currentInput = "D";
-                return 1;
+                tweener.AddTween(transform, pos, new Vector2(pos.x + 1.0f, pos.y), 1.0f);
+                if (rs == 3) 
+                {
+                    currentPos[0] = row;
+                    currentPos[1] = col;
+                    return 1;
+                } 
+                else
+                {
+                    currentPos[0] = adjRow;
+                    currentPos[1] = adjCol;
+                    return 1;
+                }
             }
-            
-            return 0;
+            else
+            {
+                return 0;
+            }
         }
         return -1;
     }
 
-    // To check if walkable or not (True for walkable, False for not)
-    private bool checkTop()
+    // 0 -  false, 1 - true, 2 -  true + flipH, 3 - true + flipV
+    private int checkWalkable(int row, int col)
     {
-        int testRow = currentPos[0];
-        int testCol = currentPos[1];
-
-        // Problem: (READ ABOVE first)
-        // For BL, going up would be testRow + 1 (this is the case for those that are flipped horizontally)
-        // (prob need to get copy of flippedV, to determine what coordinates to check)
-        // Purpose of check() is to check if the adjacent coordinates are walkable (not just at the border of quadrants)
-        // Check for mirrored quadrants too
-
-        // For cases where at the border of TL and wanting to move right, it is a guaranteed move as it is mirrored, so we can immediately return true
-        // no need to check for walls etc... 
-
-        int rs = IsOutOfBounds(testCol, testRow - 1); // Check top grid
-
-        if (rs == 1) { return false; }
-
-        int dest;
-        dest = map[testRow - 1, testCol]; 
-
-        return (dest != 1 && dest != 2 && dest != 3 && dest != 4 && dest != 7);
-    }
-
-    private bool checkBtm()
-    {
-        int testRow = currentPos[0];
-        int testCol = currentPos[1];
-
-        int rs = IsOutOfBounds(testCol, testRow + 1); // Check bot grid
-
-        if (rs == 1) { return false; }
-
-        int dest;
-        // No flip required
-        if (rs == 0) { dest = map[testRow + 1, testCol]; }
-        else { return true; } // Flip needed aka entering mirrored quadrant, so checkBtm is 100% true
-
-        return (dest != 1 && dest != 2 && dest != 3 && dest != 4 && dest != 7);
-    }
-
-    private bool checkLeft()
-    {
-        int testRow = currentPos[0];
-        int testCol = currentPos[1];
-
-        int rs = IsOutOfBounds(testCol, testRow); // Check left grid
-
-        if (rs == 1) { return false; }
-
-        int dest;
-        // No need to check for left since, going left wont lead to another quadrant
-        dest = map[testRow, testCol - 1]; 
-
-        return (dest != 1 && dest != 2 && dest != 3 && dest != 4 && dest != 7);
-    }
-
-    private bool checkRight()
-    {
-        int testRow = currentPos[0];
-        int testCol = currentPos[1];
-
-        int rs = IsOutOfBounds(testCol + 1, testRow); // Check right grid
-
-        if (rs == 1) { return false; }
-
-        int dest;
-        // No flip required
-        if (rs == 0) { dest = map[testRow, testCol + 1]; } 
-        else { return true; } // Flip needed aka entering mirrored quadrant, so checkRight is 100% true
-
-        return (dest != 1 && dest != 2 && dest != 3 && dest != 4 && dest != 7);
-    }
-
-    private int IsOutOfBounds(int di, int dj)
-    {
-        if (di < 0 || dj < 0)
+        // Check if coordinates are out of bounds first
+        if (IsOutOfBounds(col, row)) 
         {
-            return 1;
+            return 0;
         }
-        else if (di >= map.GetLength(1) || dj >= map.GetLength(0))
+
+        // Check if entering a mirrored quadrant 
+        int rs = IsEnteringMirrored(col, row);
+        if (rs == 1) // set FlipH to indicate that we are now in the flipped quadrant
+        { 
+            if (flippedH) { flippedH = false; }
+            else { flippedH = true; }
+            return 2; // If we are entering a mirrored quadrant, it is guaranteed that it is walkable
+        }
+        else if (rs == 2) // set FlipV to indicate that we are now in the flipped quadrant
         {
-            return 2; // flip will occur aka entering mirrored quadrant
+            if (flippedV) { flippedV = false; }
+            else { flippedV = true; }
+            return 3;
         }
+        else
+        { // If it is just regular movement within a quadrant, we then check for walls etc... 
+            int dest = map[row, col];
+            if (dest != 1 && dest != 2 && dest != 3 && dest != 4 && dest != 7) { return 1; }
+            else { return 0; }
+        }
+
+    }
+
+    // If it is out of bounds aka outside the map
+    private bool IsOutOfBounds(int di, int dj)
+    {
+        if (di < 0 || dj < 0) { return true; }
+        return false;
+    }
+
+    // If it is entering a mirrored quadrant 
+    // 0 - no mirror, 1 - flipH, 2 - flipV
+    private int IsEnteringMirrored(int di, int dj)
+    {
+        if (di >= map.GetLength(1)) { return 2; }
+        else if (dj >= map.GetLength(0)) { return 1; }
         return 0;
     }
 
