@@ -39,7 +39,8 @@ public class UIManager : MonoBehaviour
 
     public void Exit()
     {
-        audioManager.playMainMenu();
+        PacStudentController.quit = true;
+        audioManager.PlayMainMenu();
         ShowLoading(1);
     }
 
@@ -61,7 +62,7 @@ public class UIManager : MonoBehaviour
         float elapsedTime = 0.0f;
         float duration = 2.0f;
 
-        setGameState(index);
+        SetGameState(index);
 
         while (elapsedTime < duration)
         {
@@ -88,8 +89,8 @@ public class UIManager : MonoBehaviour
             // since the LoadingScreen timing is hard-coded (Could probably check w/ GetCurrentScene for dynamic)
             if (played == false && GameStateManager.currentScene == GameStateManager.SceneType.Level) 
             {
-                audioManager.playLevel();
-                played = true; // To prevent playLevel from being called more than once
+                played = true; // To prevent PlayLevel from being called more than once
+                audioManager.PlayLevel();
             }
 
             yield return null;
@@ -114,7 +115,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private void setGameState(int index)
+    private void SetGameState(int index)
     {
         if (index == 0) { GameStateManager.currentScene = GameStateManager.SceneType.Level; }
         else if (index == 1) { GameStateManager.currentScene = GameStateManager.SceneType.Start; }

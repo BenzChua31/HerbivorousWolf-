@@ -6,14 +6,12 @@ using UnityEngine.SceneManagement;
 // Tweener itself allows us to execute frame-rate independent motion
 public class Tweener : MonoBehaviour
 {
-    private AudioManager audioManager;
     private List<Tween> activeTweens;
 
     // Start is called before the first frame update
     void Start()
     {
         activeTweens = new List<Tween>();
-        audioManager = GameObject.FindWithTag("Managers").GetComponent<AudioManager>();
     }
 
     // Update is called once per frame
@@ -28,7 +26,6 @@ public class Tweener : MonoBehaviour
 
             if (activeTween != null)
             {
-                playAnimationAndSound(activeTween);
                 Vector3 current = activeTween.Target.position;
                 Vector3 start = activeTween.StartPos;
                 Vector3 end = activeTween.EndPos;
@@ -46,34 +43,11 @@ public class Tweener : MonoBehaviour
                 if (currDist <= 0.1f)
                 {
                     activeTween.Target.position = activeTween.EndPos;
-                    stopAnimationAndSound(activeTween);
                     activeTweens.Remove(activeTween);
                 }
             }
-
         }
     }
-
-    private void playAnimationAndSound(Tween tween)
-    {
-        // REMINDER: Add the eating pellet sound when interacting w/ pellet in the future
-
-        // Temporary, it should eat only when interacting with a pellet
-        if (tween.Target.CompareTag("Wolf")) 
-        { 
-            tween.Target.GetComponent<Animator>().SetBool("Eating", true);
-        }
-        if (SceneManager.GetActiveScene() == SceneManager.GetSceneByBuildIndex(0)) { audioManager.playRustlingLeaves(); }
-    }
-    private void stopAnimationAndSound(Tween tween)
-    {
-        if (tween.Target.CompareTag("Wolf")) 
-        { 
-            tween.Target.GetComponent<Animator>().SetBool("Eating", false);
-        }
-        if (SceneManager.GetActiveScene() == SceneManager.GetSceneByBuildIndex(0)) { audioManager.stopRustlingLeaves(); }
-    }
-
 
     public bool AddTween(Transform targetObject, Vector3 startPos, Vector3 endPos, float duration)
     {

@@ -24,36 +24,38 @@ public class AudioManager : MonoBehaviour
 
     }
 
-    public void playMainMenu()
+    public void PlayMainMenu()
     {
-        playSong(4);
+        PlaySong(4);
     }
 
-    public void playLevel()
+    public void PlayLevel()
     {
         song.Stop();
         song = audios[0];
         song.Play();
-        Invoke("playGameSong", song.clip.length);
+        StartCoroutine(PlayGameSong(song.clip.length));
     }
 
-    public void playRustlingLeaves()
+    public void PlayRustlingLeaves()
     {
         audios[5].Play();
         audios[5].loop = true;
     }
 
-    public void stopRustlingLeaves()
+    public void StopRustlingLeaves()
     {
         audios[5].Stop();
     }
 
-    private void playGameSong()
+    IEnumerator PlayGameSong(float duration)
     {
-        playSong(1);
+        yield return new WaitForSeconds(duration);
+        PlaySong(1);
+        yield return null;
     }
 
-    private void playSong(int index)
+    private void PlaySong(int index)
     {
         if (!audios[4].isPlaying) // Set MainMenu to take precedence over others
         {

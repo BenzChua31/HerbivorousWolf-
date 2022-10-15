@@ -4,9 +4,11 @@ using UnityEngine;
 
 public class PacStudentController : MonoBehaviour
 {
-
+    
     [SerializeField] private GameObject wolf;
+    private AudioManager audioManager;
     private Tweener tweener;
+    public static bool quit;
     private string lastInput = "";
     private string currentInput = "";
     private bool flippedH = false; // Initially it isn't flipped, first quad (TL)
@@ -17,8 +19,10 @@ public class PacStudentController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        quit = false;
         tweener = gameObject.GetComponent<Tweener>();
         map = LevelGenerator.getMap();
+        audioManager = GameObject.FindWithTag("Managers").GetComponent<AudioManager>();
     }
 
     // Update is called once per frame
@@ -44,14 +48,23 @@ public class PacStudentController : MonoBehaviour
             lastInput = "D";
         }
 
-        int statusL = Move(lastInput);
-        if (statusL == 0) // if checkWalkable returns a false, then we execute this
+        if (!quit)
         {
-            int statusC = Move(currentInput); // shuld naturally stop if no possible motion can be made
-            if (statusC == 0)
+            int statusL = Move(lastInput);
+            if (statusL == 0) // if CheckWalkable returns a false, then we execute this
             {
-                wolf.GetComponent<ParticleSystem>().Stop();
+                int statusC = Move(currentInput); // shuld naturally stop if no possible motion can be made
+                if (statusC == 0)
+                {
+                    wolf.GetComponent<ParticleSystem>().Stop();
+                    StopEffects();
+                }
             }
+        }
+        else
+        {
+            wolf.GetComponent<ParticleSystem>().Stop();
+            StopEffects();
         }
 
     }
@@ -87,16 +100,6 @@ public class PacStudentController : MonoBehaviour
 
     }
 
-    private void playParticles()
-    {
-        ParticleSystem ps = wolf.GetComponent<ParticleSystem>();
-
-        if (ps.isPlaying == false)
-        {
-            wolf.GetComponent<ParticleSystem>().Play();
-        }
-    }
-
     private int MoveUp(Transform transform, Vector3 pos, int row, int col)
     {
         if (!tweener.TweenExists(transform))
@@ -107,10 +110,11 @@ public class PacStudentController : MonoBehaviour
             if (flippedH) { adjRow += 1; }
             else { adjRow -= 1; }
 
-            int rs = checkWalkable(adjRow, adjCol);
-            if (rs != 0) // The flippedH/V is handled by checkWalkable method
+            int rs = CheckWalkable(adjRow, adjCol);
+            if (rs != 0) // The flippedH/V is handled by CheckWalkable method
             {
-                playParticles();
+                PlayParticles();
+                PlayEffects();
                 transform.eulerAngles = new Vector3(0, 0, 90.0f);
                 currentInput = "W";
                 tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y + 1.0f), 1.0f);
@@ -145,10 +149,11 @@ public class PacStudentController : MonoBehaviour
             if (flippedH) { adjRow -= 1; }
             else { adjRow += 1; }
 
-            int rs = checkWalkable(adjRow, adjCol);
-            if (rs != 0) // The flippedH/V is handled by checkWalkable method
+            int rs = CheckWalkable(adjRow, adjCol);
+            if (rs != 0) // The flippedH/V is handled by CheckWalkable method
             {
-                playParticles();
+                PlayParticles();
+                PlayEffects();
                 transform.eulerAngles = new Vector3(0, 0, 270.0f);
                 currentInput = "S";
                 tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y - 1.0f), 1.0f);
@@ -183,10 +188,11 @@ public class PacStudentController : MonoBehaviour
             if (flippedV) { adjCol += 1; }
             else { adjCol -= 1; }
 
-            int rs = checkWalkable(adjRow, adjCol);
-            if (rs != 0) // The flippedH/V is handled by checkWalkable method
+            int rs = CheckWalkable(adjRow, adjCol);
+            if (rs != 0) // The flippedH/V is handled by CheckWalkable method
             {
-                playParticles();
+                PlayParticles();
+                PlayEffects();
                 transform.eulerAngles = new Vector3(0, 180.0f, 0);
                 currentInput = "A";
                 tweener.AddTween(transform, pos, new Vector2(pos.x - 1.0f, pos.y), 1.0f);
@@ -221,10 +227,11 @@ public class PacStudentController : MonoBehaviour
             if (flippedV) { adjCol -= 1; }
             else { adjCol += 1; }
 
-            int rs = checkWalkable(adjRow, adjCol);
-            if (rs != 0) // The flippedH/V is handled by checkWalkable method
+            int rs = CheckWalkable(adjRow, adjCol);
+            if (rs != 0) // The flippedH/V is handled by CheckWalkable method
             {
-                playParticles();
+                PlayParticles();
+                PlayEffects();
                 transform.eulerAngles = new Vector3(0, 0, 0);
                 currentInput = "D";
                 tweener.AddTween(transform, pos, new Vector2(pos.x + 1.0f, pos.y), 1.0f);
@@ -250,7 +257,7 @@ public class PacStudentController : MonoBehaviour
     }
 
     // 0 -  false, 1 - true, 2 -  true + flipH, 3 - true + flipV
-    private int checkWalkable(int row, int col)
+    private int CheckWalkable(int row, int col)
     {
         // Check if coordinates are out of bounds first
         if (IsOutOfBounds(col, row)) 
@@ -295,6 +302,28 @@ public class PacStudentController : MonoBehaviour
         if (di >= map.GetLength(1)) { return 2; }
         else if (dj >= map.GetLength(0)) { return 1; }
         return 0;
+    }
+
+    private void PlayEffects()
+    {
+        wolf.GetComponent<Animator>().SetBool("Eating", true);
+        audioManager.PlayRustlingLeaves();
+    }
+
+    private void StopEffects()
+    {
+        wolf.GetComponent<Animator>().SetBool("Eating", false);
+        audioManager.StopRustlingLeaves();
+    }
+
+    private void PlayParticles()
+    {
+        ParticleSystem ps = wolf.GetComponent<ParticleSystem>();
+
+        if (ps.isPlaying == false)
+        {
+            wolf.GetComponent<ParticleSystem>().Play();
+        }
     }
 
 }
