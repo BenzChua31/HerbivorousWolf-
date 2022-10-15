@@ -12,6 +12,7 @@ public class MenuMovementManager : MonoBehaviour
     void Start()
     {
         tweener = gameObject.GetComponent<Tweener>();
+        itemList[0].GetComponent<ParticleSystem>().Play(); // Movement in Menu is permanent, so just play it infinitely
     }
 
     // Update is called once per frame

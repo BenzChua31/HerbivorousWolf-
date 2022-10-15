@@ -47,7 +47,11 @@ public class PacStudentController : MonoBehaviour
         int statusL = Move(lastInput);
         if (statusL == 0) // if checkWalkable returns a false, then we execute this
         {
-            Move(currentInput); // shuld naturally stop if no possible motion can be made
+            int statusC = Move(currentInput); // shuld naturally stop if no possible motion can be made
+            if (statusC == 0)
+            {
+                wolf.GetComponent<ParticleSystem>().Stop();
+            }
         }
 
     }
@@ -83,6 +87,16 @@ public class PacStudentController : MonoBehaviour
 
     }
 
+    private void playParticles()
+    {
+        ParticleSystem ps = wolf.GetComponent<ParticleSystem>();
+
+        if (ps.isPlaying == false)
+        {
+            wolf.GetComponent<ParticleSystem>().Play();
+        }
+    }
+
     private int MoveUp(Transform transform, Vector3 pos, int row, int col)
     {
         if (!tweener.TweenExists(transform))
@@ -96,6 +110,8 @@ public class PacStudentController : MonoBehaviour
             int rs = checkWalkable(adjRow, adjCol);
             if (rs != 0) // The flippedH/V is handled by checkWalkable method
             {
+                playParticles();
+                transform.eulerAngles = new Vector3(0, 0, 90.0f);
                 currentInput = "W";
                 tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y + 1.0f), 1.0f);
                 if (rs == 2)
@@ -132,6 +148,8 @@ public class PacStudentController : MonoBehaviour
             int rs = checkWalkable(adjRow, adjCol);
             if (rs != 0) // The flippedH/V is handled by checkWalkable method
             {
+                playParticles();
+                transform.eulerAngles = new Vector3(0, 0, 270.0f);
                 currentInput = "S";
                 tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y - 1.0f), 1.0f);
                 if (rs == 2)
@@ -168,6 +186,8 @@ public class PacStudentController : MonoBehaviour
             int rs = checkWalkable(adjRow, adjCol);
             if (rs != 0) // The flippedH/V is handled by checkWalkable method
             {
+                playParticles();
+                transform.eulerAngles = new Vector3(0, 180.0f, 0);
                 currentInput = "A";
                 tweener.AddTween(transform, pos, new Vector2(pos.x - 1.0f, pos.y), 1.0f);
                 if (rs == 3)
@@ -204,6 +224,8 @@ public class PacStudentController : MonoBehaviour
             int rs = checkWalkable(adjRow, adjCol);
             if (rs != 0) // The flippedH/V is handled by checkWalkable method
             {
+                playParticles();
+                transform.eulerAngles = new Vector3(0, 0, 0);
                 currentInput = "D";
                 tweener.AddTween(transform, pos, new Vector2(pos.x + 1.0f, pos.y), 1.0f);
                 if (rs == 3) 
