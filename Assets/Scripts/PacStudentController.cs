@@ -16,7 +16,7 @@ public class PacStudentController : MonoBehaviour
     private bool flippedH = false; // Initially it isn't flipped, first quad (TL)
     private bool flippedV = false;
     private int[,] map;
-    private int[] currentPos = { 5, 1 }; // Fixed Start Position in relation to the 2D map
+    private int[] currentPos = { 1, 1 }; // Fixed Start Position in relation to the 2D map
 
     // Start is called before the first frame update
     void Start()
@@ -87,7 +87,7 @@ public class PacStudentController : MonoBehaviour
 
         int row = currentPos[0];
         int col = currentPos[1];
-        Debug.Log(row + " " + col); // Coordinate tested, works 100%
+        // Debug.Log(row + " " + col); // Coordinate tested, works 100%
 
         // The tweener will deny addition if an existing tween exists 
         if (inputType.Equals("W"))
@@ -449,6 +449,15 @@ public class PacStudentController : MonoBehaviour
         PlayEffects();
         PlayParticles();
         yield return null;
+    }
+
+    void OnTriggerEnter2D(Collider2D collider)
+    {
+        Debug.Log("called");
+        if (collider.CompareTag("Berry"))
+        {
+            Destroy(collider.gameObject);
+        }
     }
 
 }
