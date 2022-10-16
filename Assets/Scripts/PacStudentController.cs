@@ -9,6 +9,7 @@ public class PacStudentController : MonoBehaviour
     private AudioManager audioManager;
     private Tweener tweener;
     public static bool quit;
+    private static bool colPlayed;
     private string lastInput = "";
     private string currentInput = "";
     private bool flippedH = false; // Initially it isn't flipped, first quad (TL)
@@ -57,8 +58,17 @@ public class PacStudentController : MonoBehaviour
                 if (statusC == 0)
                 {
                     wolf.GetComponent<ParticleSystem>().Stop();
+                    if (!currentInput.Equals("") && !colPlayed) { PlayCollisionFX(); colPlayed = true; }
                     StopEffects();
                 }
+                else
+                {
+                    colPlayed = false;
+                }
+            }
+            else
+            {
+                colPlayed = false;
             }
         }
         else
@@ -110,6 +120,19 @@ public class PacStudentController : MonoBehaviour
             if (flippedH) { adjRow += 1; }
             else { adjRow -= 1; }
 
+            int teleport = IsEnteringTeleporter(col, row);
+            if (teleport == 1)
+            {
+                if (!flippedH)
+                {
+                    flippedH = true;
+                    currentPos[0] = row;
+                    currentPos[1] = col;
+                    StartCoroutine(Teleport(1));
+                    return 1;
+                }
+            }
+
             int rs = CheckWalkable(adjRow, adjCol);
             if (rs != 0) // The flippedH/V is handled by CheckWalkable method
             {
@@ -120,14 +143,14 @@ public class PacStudentController : MonoBehaviour
                 tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y + 1.0f), 1.0f);
                 if (rs == 2)
                 {
-                    currentPos[0] = row;
-                    currentPos[1] = col;
+                    currentPos[0] = adjRow;
+                    currentPos[1] = adjCol;
                     return 1;
                 }
                 else
                 {
                     currentPos[0] = adjRow;
-                    currentPos[1] = adjCol;
+                    currentPos[1] = adjCol; // Because the bottom row of flippedH quadrants have been removed
                     return 1;
                 }
             }
@@ -149,6 +172,19 @@ public class PacStudentController : MonoBehaviour
             if (flippedH) { adjRow -= 1; }
             else { adjRow += 1; }
 
+            int teleport = IsEnteringTeleporter(col, row);
+            if (teleport == 1)
+            {
+                if (flippedH)
+                {
+                    flippedH = false;
+                    currentPos[0] = row;
+                    currentPos[1] = col;
+                    StartCoroutine(Teleport(1));
+                    return 1;
+                }
+            }
+
             int rs = CheckWalkable(adjRow, adjCol);
             if (rs != 0) // The flippedH/V is handled by CheckWalkable method
             {
@@ -159,8 +195,8 @@ public class PacStudentController : MonoBehaviour
                 tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y - 1.0f), 1.0f);
                 if (rs == 2)
                 {
-                    currentPos[0] = row;
-                    currentPos[1] = col;
+                    currentPos[0] = adjRow;
+                    currentPos[1] = adjCol;
                     return 1;
                 }
                 else
@@ -187,6 +223,19 @@ public class PacStudentController : MonoBehaviour
 
             if (flippedV) { adjCol += 1; }
             else { adjCol -= 1; }
+
+            int teleport = IsEnteringTeleporter(col, row);
+            if (teleport == 2)
+            {
+                if (!flippedV) 
+                {
+                    flippedV = true;
+                    currentPos[0] = row;
+                    currentPos[1] = col;
+                    StartCoroutine(Teleport(2));
+                    return 1;
+                }
+            }
 
             int rs = CheckWalkable(adjRow, adjCol);
             if (rs != 0) // The flippedH/V is handled by CheckWalkable method
@@ -226,6 +275,19 @@ public class PacStudentController : MonoBehaviour
 
             if (flippedV) { adjCol -= 1; }
             else { adjCol += 1; }
+
+            int teleport = IsEnteringTeleporter(col, row);
+            if (teleport == 2)
+            {
+                if (flippedV)
+                {
+                    flippedV = false;
+                    currentPos[0] = row;
+                    currentPos[1] = col;
+                    StartCoroutine(Teleport(2));
+                    return 1;
+                }
+            }
 
             int rs = CheckWalkable(adjRow, adjCol);
             if (rs != 0) // The flippedH/V is handled by CheckWalkable method
@@ -304,6 +366,15 @@ public class PacStudentController : MonoBehaviour
         return 0;
     }
 
+    // 0 - False, 1 - TopTeleporter, 2 - LeftTeleporter
+    private int IsEnteringTeleporter(int di, int dj)
+    {
+        if (dj == 0 && di == 0) { return 0; } // Top Left corner won't have a teleporter
+        else if (dj == 0) { return 1; } // TopTeleporter
+        else if (di == 0) { return 2; } // LeftTeleporter
+        else { return 0; } // Is neither 
+    }
+
     private void PlayEffects()
     {
         wolf.GetComponent<Animator>().SetBool("Eating", true);
@@ -323,7 +394,36 @@ public class PacStudentController : MonoBehaviour
         if (ps.isPlaying == false)
         {
             wolf.GetComponent<ParticleSystem>().Play();
+            // Stop child particlesystem from playing along parent's
+            wolf.GetComponent<Transform>().Find("CollisionFx").GetComponent<ParticleSystem>().Stop();
         }
+    }
+
+    private void PlayCollisionFX()
+    {
+        GameObject colFX = wolf.GetComponent<Transform>().Find("CollisionFx").gameObject;
+        GameObject newColFX = Instantiate(colFX, colFX.GetComponent<Transform>().position, Quaternion.identity);
+        newColFX.GetComponent<ParticleSystem>().Play();
+        StartCoroutine(DeleteCollisionFX(newColFX));
+        audioManager.PlayKnockWall();
+    }
+
+    IEnumerator DeleteCollisionFX(GameObject colFX)
+    {
+        while (!colFX.GetComponent<ParticleSystem>().isStopped)
+        {
+            yield return null;
+        }
+        Destroy(colFX);
+    }
+
+    IEnumerator Teleport(int flip)
+    {
+        Transform transform = wolf.GetComponent<Transform>();
+        Vector3 pos = transform.position;
+        yield return new WaitForSeconds(1.0f);
+        if (flip == 1) { transform.position = new Vector3(pos.x, -pos.y, 0); }
+        else if (flip == 2) { transform.position = new Vector3(-pos.x, pos.y, 0); }
     }
 
 }

@@ -14,6 +14,7 @@ public class AudioManager : MonoBehaviour
     void Start()
     {
         song = audios[4]; // Initially, Main Menu audio will be playing
+        song.ignoreListenerPause = true;
         song.Play();
         song.loop = true;
     }
@@ -46,6 +47,12 @@ public class AudioManager : MonoBehaviour
     public void StopRustlingLeaves()
     {
         audios[5].Stop();
+    }
+
+    public void PlayKnockWall()
+    {
+        audios[7].Play();
+        audios[7].loop = false;
     }
 
     IEnumerator PlayGameSong(float duration)
