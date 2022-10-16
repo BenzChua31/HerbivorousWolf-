@@ -6,6 +6,7 @@ public class PacStudentController : MonoBehaviour
 {
     
     [SerializeField] private GameObject wolf;
+    public Sprite[] wolfState;
     private AudioManager audioManager;
     private Tweener tweener;
     public static bool quit;
@@ -86,7 +87,7 @@ public class PacStudentController : MonoBehaviour
 
         int row = currentPos[0];
         int col = currentPos[1];
-        // Debug.Log(row + " " + col); Coordinate tested, works 100%
+        Debug.Log(row + " " + col); // Coordinate tested, works 100%
 
         // The tweener will deny addition if an existing tween exists 
         if (inputType.Equals("W"))
@@ -128,7 +129,7 @@ public class PacStudentController : MonoBehaviour
                     flippedH = true;
                     currentPos[0] = row;
                     currentPos[1] = col;
-                    StartCoroutine(Teleport(1));
+                    Teleport(1);
                     return 1;
                 }
             }
@@ -143,8 +144,8 @@ public class PacStudentController : MonoBehaviour
                 tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y + 1.0f), 1.0f);
                 if (rs == 2)
                 {
-                    currentPos[0] = adjRow;
-                    currentPos[1] = adjCol;
+                    currentPos[0] = row - 1;
+                    currentPos[1] = col;
                     return 1;
                 }
                 else
@@ -180,7 +181,7 @@ public class PacStudentController : MonoBehaviour
                     flippedH = false;
                     currentPos[0] = row;
                     currentPos[1] = col;
-                    StartCoroutine(Teleport(1));
+                    Teleport(1);
                     return 1;
                 }
             }
@@ -195,8 +196,8 @@ public class PacStudentController : MonoBehaviour
                 tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y - 1.0f), 1.0f);
                 if (rs == 2)
                 {
-                    currentPos[0] = adjRow;
-                    currentPos[1] = adjCol;
+                    currentPos[0] = row - 1;
+                    currentPos[1] = col;
                     return 1;
                 }
                 else
@@ -232,7 +233,7 @@ public class PacStudentController : MonoBehaviour
                     flippedV = true;
                     currentPos[0] = row;
                     currentPos[1] = col;
-                    StartCoroutine(Teleport(2));
+                    Teleport(2);
                     return 1;
                 }
             }
@@ -284,7 +285,7 @@ public class PacStudentController : MonoBehaviour
                     flippedV = false;
                     currentPos[0] = row;
                     currentPos[1] = col;
-                    StartCoroutine(Teleport(2));
+                    Teleport(2);
                     return 1;
                 }
             }
@@ -417,13 +418,37 @@ public class PacStudentController : MonoBehaviour
         Destroy(colFX);
     }
 
-    IEnumerator Teleport(int flip)
+    private void Teleport(int flip)
     {
         Transform transform = wolf.GetComponent<Transform>();
-        Vector3 pos = transform.position;
-        yield return new WaitForSeconds(1.0f);
-        if (flip == 1) { transform.position = new Vector3(pos.x, -pos.y, 0); }
-        else if (flip == 2) { transform.position = new Vector3(-pos.x, pos.y, 0); }
+        SpriteRenderer rend = wolf.GetComponent<SpriteRenderer>();
+        Animator anim = wolf.GetComponent<Animator>();
+        Vector3 start = transform.position;
+        Vector3 end = start;
+
+        if (flip == 1) { end = new Vector3(start.x, -start.y, 0); }
+        else if (flip == 2) { end = new Vector3(-start.x, start.y, 0); }
+
+        anim.enabled = false;
+        rend.sprite = wolfState[1];
+        StopEffects();
+        transform.GetComponent<ParticleSystem>().Stop();
+        tweener.AddTween(transform, start, end, 1.0f);
+        StartCoroutine(EnableRend(rend));
+    } 
+
+    IEnumerator EnableRend(SpriteRenderer rend)
+    {
+        Transform target = rend.GetComponent<Transform>();
+        while (tweener.TweenExists(target))
+        {
+            yield return null;
+        }
+        target.GetComponent<Animator>().enabled = true;
+        rend.sprite = wolfState[0];
+        PlayEffects();
+        PlayParticles();
+        yield return null;
     }
 
 }
