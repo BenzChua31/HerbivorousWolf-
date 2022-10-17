@@ -451,13 +451,4 @@ public class PacStudentController : MonoBehaviour
         yield return null;
     }
 
-    void OnTriggerEnter2D(Collider2D collider)
-    {
-        Debug.Log("called");
-        if (collider.CompareTag("Berry"))
-        {
-            Destroy(collider.gameObject);
-        }
-    }
-
 }

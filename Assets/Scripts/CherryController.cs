@@ -7,22 +7,25 @@ public class CherryController : MonoBehaviour
     private Camera cam;
     public GameObject cherryPrefab;
     private Tweener tweener;
+    private bool activeCoroutine = false;
 
     // Start is called before the first frame update
     void Start()
     {
         cam = GameObject.FindWithTag("MainCamera").GetComponent<Camera>();
-        Time.fixedDeltaTime = 10.0f; // in seconds
         tweener = gameObject.GetComponent<Tweener>();
     }
 
     void Update()
     {
+        if (!activeCoroutine) { StartCoroutine(AddCherry()); }
     }
 
-    // FixedUpdate is called once every 10s
-    void FixedUpdate()
+    IEnumerator AddCherry()
     {
+        activeCoroutine = true;
+        yield return new WaitForSeconds(10.0f);
+        activeCoroutine = false;
         // Gets the world coordinates of the specified ViewPort positions. 
         // So that this works in relation to the User's ViewPort
         Vector3 tL = cam.ViewportToWorldPoint(new Vector3(-0.2f, 1.2f, 0));

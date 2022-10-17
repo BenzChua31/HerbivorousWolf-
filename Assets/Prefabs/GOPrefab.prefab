@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4954830747844013014}
   - component: {fileID: 8920929036199929734}
   - component: {fileID: -3394612567166375371}
+  - component: {fileID: 8968317779638603141}
   m_Layer: 0
   m_Name: GOPrefab
   m_TagString: Cherry
@@ -123,3 +124,15 @@ CircleCollider2D:
   m_Offset: {x: -0.02, y: 0.03}
   serializedVersion: 2
   m_Radius: 0.2
+--- !u!114 &8968317779638603141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4792955454011862841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4447a38e91eb42343bff7d2663ff78cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

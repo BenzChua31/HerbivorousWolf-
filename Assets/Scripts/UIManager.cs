@@ -10,7 +10,14 @@ public class UIManager : MonoBehaviour
     public RectTransform loadingTitle;
     public RectTransform loadingCanva;
     private AudioManager audioManager;
-    // private bool ongoingCoroutine;
+    private static Text scorePts;
+    private static int score;
+    private Text gameTimer;
+    private float gameSeconds;
+    private static Text scaredTimer;
+    private static float scaredSeconds = 0;
+    private static bool isScared = false;
+    private bool isBlinking = false;
 
     private void Awake()
     {
@@ -34,7 +41,10 @@ public class UIManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (isScared)
+        {
+            StartScaredTimer();
+        }
     }
 
     public void Exit()
@@ -112,6 +122,12 @@ public class UIManager : MonoBehaviour
         else if (scene.buildIndex == 1)
         {
             GameObject.FindWithTag("Lvl1Btn").GetComponent<Button>().onClick.AddListener(LoadFirst);
+            scorePts = GameObject.FindWithTag("Score").GetComponent<Text>();
+            gameTimer= GameObject.FindWithTag("GameTimer").GetComponent<Text>();
+            scaredTimer = GameObject.FindWithTag("ScaredTimer").GetComponent<Text>();
+            score = 0;
+            gameSeconds = 0;
+            scaredSeconds = 0;
         }
     }
 
@@ -128,5 +144,61 @@ public class UIManager : MonoBehaviour
         loadingTitle.offsetMax = new Vector2(loadingTitle.offsetMax.x, -loadingCanva.rect.height);
     }
 
+    // UIManager is a Singleton anyways, so why not Static for direct access
+    public static void AddScore(int pts)
+    {
+        score += 10;
+        scorePts.text = score.ToString();
+    }
+
+    private void SetGameTimer(float elapsedSeconds) 
+    {
+        int min = (int) Mathf.Floor(elapsedSeconds / 60);
+        int sec = (int) Mathf.Floor(elapsedSeconds % 60);
+        int ms = (int) ((elapsedSeconds % 1) * 100);
+
+        gameTimer.text = min.ToString("00") + ":" + sec.ToString("00") + ":" + ms.ToString("00");
+    }
+
+    private void SetScaredTimer()
+    {
+        scaredSeconds += Time.deltaTime;
+
+        if (scaredSeconds >= 5.0f && scaredSeconds < 10.0f && !isBlinking) // Blinking red 
+        {
+            StartCoroutine(BlinkingRed());
+        } 
+
+        if (scaredSeconds >= 10.0f)
+        {
+            scaredSeconds = 0.0f;
+            isScared = false;
+            scaredTimer.text = "0";
+            scaredTimer.color = new Color(255, 255, 255, 0);
+        } else
+        {
+            scaredTimer.text = ((int)scaredSeconds).ToString();
+        }
+    }
+
+    IEnumerator BlinkingRed()
+    {
+        isBlinking = true;
+        while (scaredSeconds != 0.0f) // When timer resets or becomes disabled, we stop coroutine
+        {
+            scaredTimer.color = new Color(255, 0, 0, 255);
+            yield return new WaitForSeconds(0.5f);
+            scaredTimer.color = new Color(255, 255, 255, 255);
+            yield return new WaitForSeconds(0.5f);
+        }
+        isBlinking = false;
+        yield return null;
+    }
+
+    public static void StartScaredTimer()
+    {
+        isScared = true;
+        scaredSeconds = 0; // If another gets pickup before timer ends, it resets timer to 0
+    }
 
 }
