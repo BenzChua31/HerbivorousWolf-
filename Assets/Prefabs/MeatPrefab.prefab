@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1024802667980839712}
   - component: {fileID: 8450313811571528907}
   - component: {fileID: -1545659918122812965}
+  - component: {fileID: -3373627229850979366}
   m_Layer: 0
   m_Name: MeatPrefab
   m_TagString: Power
@@ -101,3 +102,15 @@ CircleCollider2D:
   m_Offset: {x: -0.01, y: 0.01}
   serializedVersion: 2
   m_Radius: 0.25
+--- !u!114 &-3373627229850979366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1402161904895303214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4447a38e91eb42343bff7d2663ff78cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

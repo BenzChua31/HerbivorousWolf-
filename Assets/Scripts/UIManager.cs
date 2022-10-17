@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+// Handles all the UI interface & Loading Screens 
 public class UIManager : MonoBehaviour
 {
     private static UIManager itself;
@@ -15,8 +16,6 @@ public class UIManager : MonoBehaviour
     private Text gameTimer;
     private float gameSeconds;
     private static Text scaredTimer;
-    private static float scaredSeconds = 0;
-    private static bool isScared = false;
     private bool isBlinking = false;
 
     private void Awake()
@@ -41,9 +40,10 @@ public class UIManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (isScared)
+        if (gameTimer != null) 
         {
-            StartScaredTimer();
+            gameSeconds += Time.deltaTime;
+            SetGameTimer(gameSeconds);
         }
     }
 
@@ -91,10 +91,11 @@ public class UIManager : MonoBehaviour
         bool played = false;
 
         while (elapsedTime < duration)
-        {
-            loadingTitle.anchoredPosition = Vector3.Lerp(loadingTitle.anchoredPosition, new Vector2(0.0f, -loadingCanva.rect.height - 30.0f), elapsedTime / duration);
+        { // the -600.0f is hard-coded for aspect ratio 4:3 
+            loadingTitle.anchoredPosition = Vector3.Lerp(loadingTitle.anchoredPosition, new Vector2(0.0f, -loadingCanva.rect.height - 500.0f), elapsedTime / duration);
             elapsedTime += Time.deltaTime;
-
+            
+            // FIX THIS PLEASE
             // Added this because I don't want the music to play onSceneLoad, but when LoadingScreen is sliding off
             // since the LoadingScreen timing is hard-coded (Could probably check w/ GetCurrentScene for dynamic)
             if (played == false && GameStateManager.currentScene == GameStateManager.SceneType.Level) 
@@ -118,16 +119,15 @@ public class UIManager : MonoBehaviour
         if (scene.buildIndex == 0)
         {
             GameObject.FindWithTag("Exit").GetComponent<Button>().onClick.AddListener(Exit);
+            scorePts = GameObject.FindWithTag("Score").GetComponent<Text>();
+            gameTimer = GameObject.FindWithTag("GameTimer").GetComponent<Text>();
+            scaredTimer = GameObject.FindWithTag("ScaredTimer").GetComponent<Text>();
+            score = 0;
+            gameSeconds = 0;
         }
         else if (scene.buildIndex == 1)
         {
             GameObject.FindWithTag("Lvl1Btn").GetComponent<Button>().onClick.AddListener(LoadFirst);
-            scorePts = GameObject.FindWithTag("Score").GetComponent<Text>();
-            gameTimer= GameObject.FindWithTag("GameTimer").GetComponent<Text>();
-            scaredTimer = GameObject.FindWithTag("ScaredTimer").GetComponent<Text>();
-            score = 0;
-            gameSeconds = 0;
-            scaredSeconds = 0;
         }
     }
 
@@ -147,7 +147,7 @@ public class UIManager : MonoBehaviour
     // UIManager is a Singleton anyways, so why not Static for direct access
     public static void AddScore(int pts)
     {
-        score += 10;
+        score += pts;
         scorePts.text = score.ToString();
     }
 
@@ -160,45 +160,42 @@ public class UIManager : MonoBehaviour
         gameTimer.text = min.ToString("00") + ":" + sec.ToString("00") + ":" + ms.ToString("00");
     }
 
-    private void SetScaredTimer()
+    public void UpdateScaredTimer(float scaredSeconds)
     {
-        scaredSeconds += Time.deltaTime;
-
-        if (scaredSeconds >= 5.0f && scaredSeconds < 10.0f && !isBlinking) // Blinking red 
-        {
-            StartCoroutine(BlinkingRed());
-        } 
-
-        if (scaredSeconds >= 10.0f)
-        {
-            scaredSeconds = 0.0f;
-            isScared = false;
-            scaredTimer.text = "0";
-            scaredTimer.color = new Color(255, 255, 255, 0);
-        } else
-        {
-            scaredTimer.text = ((int)scaredSeconds).ToString();
-        }
+        scaredTimer.text = ((int)scaredSeconds).ToString();
     }
 
-    IEnumerator BlinkingRed()
+    public void HideScaredTimer()
+    {
+        scaredTimer.color = new Color(255, 255, 255, 0);
+    }
+
+    public void ShowScaredTimer()
+    {
+        scaredTimer.color = new Color(255, 255, 255, 255);
+    }
+
+    public void ActivateTimerBlink()
     {
         isBlinking = true;
-        while (scaredSeconds != 0.0f) // When timer resets or becomes disabled, we stop coroutine
+        StartCoroutine(Recovering());
+    }
+
+    public void StopTimerBlink()
+    {
+        isBlinking = false;
+    }
+
+    IEnumerator Recovering()
+    {
+        while (isBlinking)
         {
             scaredTimer.color = new Color(255, 0, 0, 255);
             yield return new WaitForSeconds(0.5f);
             scaredTimer.color = new Color(255, 255, 255, 255);
             yield return new WaitForSeconds(0.5f);
         }
-        isBlinking = false;
         yield return null;
-    }
-
-    public static void StartScaredTimer()
-    {
-        isScared = true;
-        scaredSeconds = 0; // If another gets pickup before timer ends, it resets timer to 0
     }
 
 }

@@ -20,12 +20,15 @@ public class Tweener : MonoBehaviour
         // ToArray used to clone the array to avoid ConcurrentModification
         foreach (Tween activeTween in activeTweens.ToArray())
         {
-
             float timer = activeTween.TimeElapsed;
             timer += Time.deltaTime; 
 
             if (activeTween != null)
             {
+
+                // If we destroy an object, then it we can just remove its tween immediately
+                if (!activeTween.Target.gameObject.activeSelf) { activeTweens.Remove(activeTween); continue; } 
+
                 Vector3 current = activeTween.Target.position;
                 Vector3 start = activeTween.StartPos;
                 Vector3 end = activeTween.EndPos;
@@ -70,11 +73,6 @@ public class Tweener : MonoBehaviour
             if (activeTween.Target == target) { return true; }
         }
         return false;
-    }
-
-    public void RemoveAllTweens()
-    {
-        activeTweens.Clear();
     }
 
 }

@@ -422,6 +422,7 @@ public class PacStudentController : MonoBehaviour
     {
         Transform transform = wolf.GetComponent<Transform>();
         SpriteRenderer rend = wolf.GetComponent<SpriteRenderer>();
+        CircleCollider2D collider = wolf.GetComponent<CircleCollider2D>();
         Animator anim = wolf.GetComponent<Animator>();
         Vector3 start = transform.position;
         Vector3 end = start;
@@ -429,22 +430,23 @@ public class PacStudentController : MonoBehaviour
         if (flip == 1) { end = new Vector3(start.x, -start.y, 0); }
         else if (flip == 2) { end = new Vector3(-start.x, start.y, 0); }
 
+        collider.enabled = false;
         anim.enabled = false;
         rend.sprite = wolfState[1];
         StopEffects();
         transform.GetComponent<ParticleSystem>().Stop();
         tweener.AddTween(transform, start, end, 1.0f);
-        StartCoroutine(EnableRend(rend));
+        StartCoroutine(EnableRend(rend, transform, anim, collider));
     } 
 
-    IEnumerator EnableRend(SpriteRenderer rend)
+    IEnumerator EnableRend(SpriteRenderer rend, Transform transform, Animator animator, CircleCollider2D collider)
     {
-        Transform target = rend.GetComponent<Transform>();
-        while (tweener.TweenExists(target))
+        while (tweener.TweenExists(transform))
         {
             yield return null;
         }
-        target.GetComponent<Animator>().enabled = true;
+        collider.enabled = true;
+        animator.enabled = true;
         rend.sprite = wolfState[0];
         PlayEffects();
         PlayParticles();
