@@ -52,19 +52,55 @@ public class LevelGenerator : MonoBehaviour
         topL.GetComponent<Transform>().SetParent(transformGL, false);
         topL.GetComponent<Transform>().position = new Vector3(7, 4, 0);
 
+        // Create the BotL Quadrant as well 
+        GameObject botL = new GameObject("botL");
+        botL.GetComponent<Transform>().SetParent(transformGL, false);
+        botL.GetComponent<Transform>().position = new Vector3(7, -3, 0);
+        botL.GetComponent<Transform>().eulerAngles = new Vector3(0, 180.0f, 180.0f);
+
+        int rows = map.GetLength(0);
+
         // Proceed to step through array
         for (int j = 0; j < map.GetLength(0); j++) // 15 rows
         {
             for (int i = 0; i < map.GetLength(1); i++) // 14 columns
             {
                 int val = map[j, i];
-                if (val == 1) CreateOuterC(i, j, topL.GetComponent<Transform>());
-                if (val == 2) CreateOuterW(i, j, topL.GetComponent<Transform>());
-                if (val == 3) CreateInnerC(i, j, topL.GetComponent<Transform>());
-                if (val == 4) CreateInnerW(i, j, topL.GetComponent<Transform>());
-                if (val == 5) CreateBerry(i, j, topL.GetComponent<Transform>());
-                if (val == 6) CreateMeat(i, j, topL.GetComponent<Transform>());
-                if (val == 7) CreateTCon(i, j, topL.GetComponent<Transform>());
+                if (val == 1) 
+                { 
+                    CreateOuterC(i, j, topL.GetComponent<Transform>());
+                    if (j != rows - 1) { CreateOuterC(i, j, botL.GetComponent<Transform>()); }
+                }
+                if (val == 2) 
+                { 
+                    CreateOuterW(i, j, topL.GetComponent<Transform>());
+                    if (j != rows - 1) { CreateOuterW(i, j, botL.GetComponent<Transform>()); }
+                }
+                if (val == 3) 
+                { 
+                    CreateInnerC(i, j, topL.GetComponent<Transform>());
+                    if (j != rows - 1) { CreateInnerC(i, j, botL.GetComponent<Transform>()); }
+                }
+                if (val == 4) 
+                { 
+                    CreateInnerW(i, j, topL.GetComponent<Transform>());
+                    if (j != rows - 1) { CreateInnerW(i, j, botL.GetComponent<Transform>()); }
+                }
+                if (val == 5) 
+                { 
+                    CreateBerry(i, j, topL.GetComponent<Transform>());
+                    if (j != rows - 1) { CreateBerry(i, j, botL.GetComponent<Transform>()); }
+                }
+                if (val == 6) 
+                { 
+                    CreateMeat(i, j, topL.GetComponent<Transform>());
+                    if (j != rows - 1) { CreateMeat(i, j, botL.GetComponent<Transform>()); }
+                }
+                if (val == 7) 
+                { 
+                    CreateTCon(i, j, topL.GetComponent<Transform>());
+                    if (j != rows - 1) { CreateTCon(i, j, botL.GetComponent<Transform>()); }
+                }
             }
         }
 
@@ -79,19 +115,6 @@ public class LevelGenerator : MonoBehaviour
         topR.name = "topR";
         topR.GetComponent<Transform>().SetParent(transformGL, false);
 
-        GameObject botL = Instantiate(topL, new Vector3(7, -3, 0), Quaternion.Euler(new Vector3(0, 180.0f, 180.0f)));
-        botL.name = "botL";
-        botL.GetComponent<Transform>().SetParent(transformGL, false);
-
-        foreach (Transform transform in botL.GetComponent<Transform>())
-        {
-            if (transform.position.y == -3.5f)
-            {
-                Destroy(transform.gameObject);
-            }
-        }
-
-        // We dupe botL so that we can save a for-loop check
         GameObject botR = Instantiate(botL, new Vector3(-7, -3, 0), Quaternion.Euler(new Vector3(0, 0, 180.0f)));
         botR.name = "botR";
         botR.GetComponent<Transform>().SetParent(transformGL, false);

@@ -44,6 +44,26 @@ public class AudioManager : MonoBehaviour
         audios[8].loop = false;
     }
 
+    public void PlayPowerUp()
+    {
+        audios[9].Play();
+        audios[9].loop = false;
+    }
+
+    public void PlayBunnyDeath()
+    {
+        song.Pause();
+        audios[10].Play();
+        audios[10].loop = false;
+        StartCoroutine(UnPauseMusic(audios[10].clip.length));
+    }
+
+    IEnumerator UnPauseMusic(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        if (song == audios[2]) { song.UnPause(); }
+    }
+
     public void PlayScaredSong()
     {
         song.Stop();
@@ -72,6 +92,12 @@ public class AudioManager : MonoBehaviour
     {
         audios[7].Play();
         audios[7].loop = false;
+    }
+
+    public void PlayPerish()
+    {
+        audios[6].Play();
+        audios[6].loop = false;
     }
 
     IEnumerator PlayGameSong(float duration)

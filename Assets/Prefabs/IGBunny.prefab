@@ -198,7 +198,7 @@ GameObject:
   - component: {fileID: 710062188623512988}
   - component: {fileID: 4711157496803674944}
   m_Layer: 0
-  m_Name: Bunny2
+  m_Name: IGBunny
   m_TagString: Bunny
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

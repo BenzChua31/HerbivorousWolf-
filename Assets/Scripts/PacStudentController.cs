@@ -8,15 +8,20 @@ public class PacStudentController : MonoBehaviour
     [SerializeField] private GameObject wolf;
     public Sprite[] wolfState;
     private AudioManager audioManager;
+    private UIManager uiManager;
     private Tweener tweener;
+    private Animator animator;
     public static bool quit;
-    private static bool colPlayed;
+    private static bool colPlayed = false;
+    private bool isListening = true;
+    private int lives;
     private string lastInput = "";
     private string currentInput = "";
     private bool flippedH = false; // Initially it isn't flipped, first quad (TL)
     private bool flippedV = false;
     private int[,] map;
     private int[] currentPos = { 1, 1 }; // Fixed Start Position in relation to the 2D map
+    private Vector3 startPosition;
 
     // Start is called before the first frame update
     void Start()
@@ -25,29 +30,35 @@ public class PacStudentController : MonoBehaviour
         tweener = gameObject.GetComponent<Tweener>();
         map = LevelGenerator.getMap();
         audioManager = GameObject.FindWithTag("Managers").GetComponent<AudioManager>();
+        uiManager = GameObject.FindWithTag("Managers").GetComponent<UIManager>();
+        animator = wolf.GetComponent<Animator>();
+        startPosition = wolf.transform.position;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
-        // lastInput will keep changing if player spams WASD
-        // Tween will be added for the last key player press
-        if (Input.GetKey(KeyCode.W))
+
+        if (isListening)
         {
-            lastInput = "W";
-        }
-        if (Input.GetKey(KeyCode.A))
-        {
-            lastInput = "A";
-        }
-        if (Input.GetKey(KeyCode.S))
-        {
-            lastInput = "S";
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
-            lastInput = "D";
+            // lastInput will keep changing if player spams WASD
+            // Tween will be added for the last key player press
+            if (Input.GetKey(KeyCode.W))
+            {
+                lastInput = "W";
+            }
+            if (Input.GetKey(KeyCode.A))
+            {
+                lastInput = "A";
+            }
+            if (Input.GetKey(KeyCode.S))
+            {
+                lastInput = "S";
+            }
+            if (Input.GetKey(KeyCode.D))
+            {
+                lastInput = "D";
+            }
         }
 
         if (!quit)
@@ -378,13 +389,13 @@ public class PacStudentController : MonoBehaviour
 
     private void PlayEffects()
     {
-        wolf.GetComponent<Animator>().SetBool("Eating", true);
+        animator.SetBool("Eating", true);
         audioManager.PlayRustlingLeaves();
     }
 
     private void StopEffects()
     {
-        wolf.GetComponent<Animator>().SetBool("Eating", false);
+        animator.SetBool("Eating", false);
         audioManager.StopRustlingLeaves();
     }
 
@@ -397,6 +408,7 @@ public class PacStudentController : MonoBehaviour
             wolf.GetComponent<ParticleSystem>().Play();
             // Stop child particlesystem from playing along parent's
             wolf.GetComponent<Transform>().Find("CollisionFx").GetComponent<ParticleSystem>().Stop();
+            wolf.GetComponent<Transform>().Find("DeathFx").GetComponent<ParticleSystem>().Stop();
         }
     }
 
@@ -451,6 +463,46 @@ public class PacStudentController : MonoBehaviour
         PlayEffects();
         PlayParticles();
         yield return null;
+    }
+
+    public void ReduceLife()
+    {
+        lives -= 1;
+        uiManager.ReduceLife();
+        currentPos[0] = 1; currentPos[1] = 1;
+        flippedH = false; flippedV = false;
+        colPlayed = false;
+        wolf.transform.position = startPosition; // Reset to start 
+        animator.SetBool("Dead", false);
+        animator.SetBool("Eating", false);
+        isListening = true;
+    }
+
+    public void PlayWolfFuneral()
+    {
+        isListening = false;
+        lastInput = ""; currentInput = ""; // Reset Inputs 
+        tweener.RemoveTweens(); // RemoveAllTweens 
+        animator.SetBool("Dead", true);
+        PlayDeathFX();
+    }
+
+    private void PlayDeathFX()
+    {
+        GameObject deathFX = wolf.GetComponent<Transform>().Find("DeathFx").gameObject;
+        GameObject newDeathFX = Instantiate(deathFX, deathFX.GetComponent<Transform>().position, Quaternion.identity);
+        newDeathFX.GetComponent<ParticleSystem>().Play();
+        StartCoroutine(DeleteDeathFX(newDeathFX));
+        audioManager.PlayPerish();
+    }
+
+    IEnumerator DeleteDeathFX(GameObject deathFX)
+    {
+        while (!deathFX.GetComponent<ParticleSystem>().isStopped)
+        {
+            yield return null;
+        }
+        Destroy(deathFX);
     }
 
 }

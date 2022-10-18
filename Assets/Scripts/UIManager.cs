@@ -18,6 +18,7 @@ public class UIManager : MonoBehaviour
     private Text scaredLabel;
     private Text scaredTimer;
     private bool isBlinking = false;
+    private static List<Image> livesImg;
 
     private void Awake()
     {
@@ -29,6 +30,7 @@ public class UIManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        livesImg = new List<Image>();
         GameObject.FindWithTag("Lvl1Btn").GetComponent<Button>().onClick.AddListener(LoadFirst);
         // Sets the top and bottom of the loadingTitle
         loadingTitle.offsetMin = new Vector2(loadingTitle.offsetMin.x, -loadingCanva.rect.height);
@@ -125,6 +127,7 @@ public class UIManager : MonoBehaviour
             scaredTimer = GameObject.FindWithTag("ScaredTimer").GetComponent<Text>();
             // Slightly hard-coded since GetComponentInChildren<Text>() does not work (likely a bug?)
             scaredLabel = GameObject.Find("ScaredTimer").GetComponent<Text>(); 
+            foreach (GameObject go in GameObject.FindGameObjectsWithTag("Life")) { livesImg.Add(go.GetComponent<Image>()); }
             score = 0;
             gameSeconds = 0;
         }
@@ -202,6 +205,16 @@ public class UIManager : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
         }
         yield return null;
+    }
+
+    public void ReduceLife()
+    {
+        foreach (Image img in livesImg) { if (img.enabled) { img.enabled = false; break; } } // Just remove one
+    }
+
+    public void ResetLives()
+    {
+        foreach (Image img in livesImg) { img.enabled = true; } 
     }
 
 }

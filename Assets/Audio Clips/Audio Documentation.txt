@@ -24,7 +24,7 @@ BGM:
 : When player 'kills/eats' an enemy
      - This will lasts for 1-2 seconds after eating the enemy
      - It will override the panic state bgm during this duration
-     - Spook4, somewhere in between, there is an ending-like song
+     - BunnyDeath.wav
 
 SFX:
 : When player is consuming pellets/points 

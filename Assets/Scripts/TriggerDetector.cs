@@ -57,7 +57,7 @@ public class TriggerDetector : MonoBehaviour
             }
             else if (gameObject.CompareTag("Power"))
             {
-                audioManager.PlayEatPellet();
+                audioManager.PlayPowerUp();
                 audioManager.PlayScaredSong();
                 foreach (BunnyController bc in bunnyControllers)
                 {
@@ -69,12 +69,15 @@ public class TriggerDetector : MonoBehaviour
             {
                 if (selfController.IsScaredState())
                 {
-                    audioManager.PlayEatPellet();
+                    UIManager.AddScore(300);
+                    audioManager.PlayBunnyDeath();
                     Destroy(gameObject);
                 } 
                 else
                 {
-                    // Make PacStudent die here
+                    PacStudentController psc = GameObject.FindWithTag("WolfController").GetComponent<PacStudentController>();
+                    psc.PlayWolfFuneral();
+                    psc.ReduceLife();
                 }
             }
         }

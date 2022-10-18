@@ -75,6 +75,11 @@ public class Tweener : MonoBehaviour
         return false;
     }
 
+    public void RemoveTweens()
+    {
+        activeTweens.Clear();
+    }
+
 }
 
 // Tested DOTween but not allowed to use it, so just going to keep a copy of my DOTween solution here
