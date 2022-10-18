@@ -38,6 +38,25 @@ public class AudioManager : MonoBehaviour
         StartCoroutine(PlayGameSong(song.clip.length));
     }
 
+    public void PlayEatPellet()
+    {
+        audios[8].Play();
+        audios[8].loop = false;
+    }
+
+    public void PlayScaredSong()
+    {
+        song.Stop();
+        song = audios[2];
+        song.Play();
+        song.loop = true;
+    }
+
+    public void StopScaredSong()
+    {
+        PlaySong(1);
+    }
+
     public void PlayRustlingLeaves()
     {
         audios[5].Play();

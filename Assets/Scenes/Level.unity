@@ -1488,7 +1488,7 @@ GameObject:
   - component: {fileID: 163763570}
   - component: {fileID: 163763569}
   m_Layer: 5
-  m_Name: timer
+  m_Name: scaredtimer
   m_TagString: ScaredTimer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

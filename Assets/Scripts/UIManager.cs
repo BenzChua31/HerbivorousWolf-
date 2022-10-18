@@ -15,7 +15,8 @@ public class UIManager : MonoBehaviour
     private static int score;
     private Text gameTimer;
     private float gameSeconds;
-    private static Text scaredTimer;
+    private Text scaredLabel;
+    private Text scaredTimer;
     private bool isBlinking = false;
 
     private void Awake()
@@ -122,6 +123,8 @@ public class UIManager : MonoBehaviour
             scorePts = GameObject.FindWithTag("Score").GetComponent<Text>();
             gameTimer = GameObject.FindWithTag("GameTimer").GetComponent<Text>();
             scaredTimer = GameObject.FindWithTag("ScaredTimer").GetComponent<Text>();
+            // Slightly hard-coded since GetComponentInChildren<Text>() does not work (likely a bug?)
+            scaredLabel = GameObject.Find("ScaredTimer").GetComponent<Text>(); 
             score = 0;
             gameSeconds = 0;
         }
@@ -167,17 +170,20 @@ public class UIManager : MonoBehaviour
 
     public void HideScaredTimer()
     {
+        scaredLabel.color = new Color(255, 255, 255, 0);
         scaredTimer.color = new Color(255, 255, 255, 0);
     }
 
     public void ShowScaredTimer()
     {
+        scaredLabel.color = new Color(255, 255, 255, 255);
         scaredTimer.color = new Color(255, 255, 255, 255);
     }
 
     public void ActivateTimerBlink()
     {
         isBlinking = true;
+        scaredTimer.color = new Color(255, 0, 0, 255);
         StartCoroutine(Recovering());
     }
 
@@ -190,9 +196,9 @@ public class UIManager : MonoBehaviour
     {
         while (isBlinking)
         {
-            scaredTimer.color = new Color(255, 0, 0, 255);
-            yield return new WaitForSeconds(0.5f);
             scaredTimer.color = new Color(255, 255, 255, 255);
+            yield return new WaitForSeconds(0.5f);
+            scaredTimer.color = new Color(255, 0, 0, 255);
             yield return new WaitForSeconds(0.5f);
         }
         yield return null;

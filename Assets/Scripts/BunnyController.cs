@@ -7,9 +7,11 @@ public class BunnyController : MonoBehaviour
 
     private bool isScared;
     private bool isRecovering;
+    private bool isBlinking;
     private Animator animator;
-    private float scaredSeconds = 0;
+    private float scaredSeconds = 10;
     private UIManager uiManager;
+    private AudioManager audioManager;
 
     // Start is called before the first frame update
     void Start()
@@ -18,6 +20,7 @@ public class BunnyController : MonoBehaviour
         isRecovering = false;
         animator = gameObject.GetComponent<Animator>();
         uiManager = GameObject.FindWithTag("Managers").GetComponent<UIManager>();
+        audioManager = GameObject.FindWithTag("Managers").GetComponent<AudioManager>();
     }
 
     // Update is called once per frame
@@ -33,9 +36,10 @@ public class BunnyController : MonoBehaviour
     {
         isScared = true;
         isRecovering = false;
-        scaredSeconds = 0.0f;
+        isBlinking = false;
+        scaredSeconds = 10.0f;
         animator.SetBool("Panic", true);
-        animator.SetBool("Recovering", false);
+        animator.SetBool("Recover", false);
         uiManager.ShowScaredTimer();
         uiManager.StopTimerBlink();
     }
@@ -47,25 +51,34 @@ public class BunnyController : MonoBehaviour
 
     private void SetScaredTimer()
     {
-        scaredSeconds += Time.deltaTime;
+        scaredSeconds -= Time.deltaTime;
 
-        if (scaredSeconds >= 10.0f)
+        if (scaredSeconds <= 0.0f)
         {
-            scaredSeconds = 0.0f;
+            scaredSeconds = 10.0f;
             isScared = false;
-            uiManager.UpdateScaredTimer(0.0f);
+            animator.SetBool("Panic", false);
+            animator.SetBool("Recover", false);
+            uiManager.UpdateScaredTimer(10.0f);
             uiManager.HideScaredTimer();
             uiManager.StopTimerBlink();
+            audioManager.StopScaredSong(); // return back to normal song
         }
         else
         {
             uiManager.UpdateScaredTimer(scaredSeconds);
         }
 
-        if (scaredSeconds >= 7.0f && scaredSeconds < 10.0f && !isRecovering) // Blinking red timer & Bunny
+        if (scaredSeconds < 3.0f && scaredSeconds > 0.0f && !isRecovering) // Blinking Bunny at 3secs left
         {
             isRecovering = true;
-            animator.SetBool("Recovering", true);
+            animator.SetBool("Recover", true);
+        }
+
+        // 3.99 is displayed as 3
+        if (scaredSeconds < 4.0f && scaredSeconds > 0.0f && !isBlinking) // Blinking red timer 
+        {
+            isBlinking = true;
             uiManager.ActivateTimerBlink();
         }
 
