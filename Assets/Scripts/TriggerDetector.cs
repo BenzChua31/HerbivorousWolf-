@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 public class TriggerDetector : MonoBehaviour
 {
+    private PacStudentController psc;
     private List<BunnyController> bunnyControllers; // For power pellet to access all other bunny controllers
     private BunnyController selfController; // To access its own controller
     private AudioManager audioManager;
@@ -21,6 +22,8 @@ public class TriggerDetector : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        psc = GameObject.FindWithTag("WolfController").GetComponent<PacStudentController>();
+
         if (gameObject.CompareTag("Power"))
         {
             bunnyControllers = new List<BunnyController>();
@@ -46,6 +49,7 @@ public class TriggerDetector : MonoBehaviour
             if (gameObject.CompareTag("Berry"))
             {
                 UIManager.AddScore(10);
+                psc.ConsumeBerry();
                 audioManager.PlayEatPellet(); 
                 Destroy(gameObject);
             }
@@ -75,7 +79,6 @@ public class TriggerDetector : MonoBehaviour
                 } 
                 else
                 {
-                    PacStudentController psc = GameObject.FindWithTag("WolfController").GetComponent<PacStudentController>();
                     psc.PlayWolfFuneral();
                 }
             }

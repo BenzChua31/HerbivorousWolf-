@@ -8,6 +8,9 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
     private static UIManager itself;
+    private Outline titleOutline;
+    private Text highScore;
+    private Text bestTime;
     public RectTransform loadingTitle;
     public RectTransform loadingCanva;
     private Text countDown;
@@ -23,6 +26,7 @@ public class UIManager : MonoBehaviour
     private Text scaredTimer;
     private bool isBlinking = false;
     private static List<Image> livesImg;
+    private Text gameOver;
 
 
     private void Awake()
@@ -43,6 +47,8 @@ public class UIManager : MonoBehaviour
         audioManager = gameObject.GetComponent<AudioManager>();
         SceneManager.sceneLoaded += OnSceneLoaded;
         countDownTime = audioManager.audios[0].clip.length;
+        titleOutline = GameObject.FindWithTag("MenuTitle").GetComponent<Outline>();
+        StartCoroutine(FlashingTitle());
     }
 
     // Update is called once per frame
@@ -70,6 +76,7 @@ public class UIManager : MonoBehaviour
 
     public void LoadFirst()
     {
+        StopCoroutine(FlashingTitle());
         ShowLoading(0);
     }
 
@@ -137,20 +144,27 @@ public class UIManager : MonoBehaviour
             scaredTimer = GameObject.FindWithTag("ScaredTimer").GetComponent<Text>();
             // Slightly hard-coded since GetComponentInChildren<Text>() does not work (likely a bug?)
             scaredLabel = GameObject.Find("ScaredTimer").GetComponent<Text>();
+            gameOver = GameObject.FindWithTag("GameOver").GetComponent<Text>();
+            gameOver.enabled = false;
             foreach (GameObject go in GameObject.FindGameObjectsWithTag("Life")) { livesImg.Add(go.GetComponent<Image>()); }
             score = 0;
             gameSeconds = 0;
-            OnStartHold();
+            DisableGame();
         }
         else if (scene.buildIndex == 1)
         {
             GameObject.FindWithTag("Lvl1Btn").GetComponent<Button>().onClick.AddListener(LoadFirst);
+            titleOutline = GameObject.FindWithTag("MenuTitle").GetComponent<Outline>();
+            highScore = GameObject.FindWithTag("HighScore").GetComponent<Text>();
+            bestTime = GameObject.FindWithTag("BestTime").GetComponent<Text>();
+            UpdateBestScoreAndTime();
+            StartCoroutine(FlashingTitle());
         }
     }
 
     // Pause the game on start until the loadingScreen is done loading
     // Reason why it is better to not set timescale = 0 because loadingscreen animation depends on it, as well as the countdown
-    private void OnStartHold() 
+    public void DisableGame() 
     {
         // Disable Cherry Spawn 
         GameObject.FindWithTag("CherryController").GetComponent<CherryController>().DisableSpawn(); 
@@ -164,13 +178,28 @@ public class UIManager : MonoBehaviour
 
     }
 
-    private void OnStartUnhold() // After countdown ends 
+    public void EnableGame() // After countdown ends 
     {
         GameObject.FindWithTag("CherryController").GetComponent<CherryController>().EnableSpawn();
         gameStarted = true;
         GameObject.FindWithTag("Wolf").GetComponent<CircleCollider2D>().enabled = true;
         GameObject.FindWithTag("WolfController").GetComponent<PacStudentController>().EnableInputListener();
 
+    }
+
+    public void SaveGameTimerAndScore() 
+    {
+        int previousScore = PlayerPrefs.GetInt("HighScore", 0);
+
+        if (previousScore < score)
+        {
+            PlayerPrefs.SetInt("HighScore", score);
+            PlayerPrefs.SetFloat("BestTime", gameSeconds);
+        } 
+        else if (previousScore == score && PlayerPrefs.GetFloat("GameTimer", 0.0f) < gameSeconds)  
+        {
+            PlayerPrefs.SetFloat("BestTime", gameSeconds); 
+        }
     }
 
     private void StartCountDown()
@@ -184,7 +213,8 @@ public class UIManager : MonoBehaviour
         else if (countDown.enabled && second < 0) 
         { 
             countDown.enabled = false;
-            OnStartUnhold();
+            startCountdown = false;
+            EnableGame();
         }
 
         if (second >= 0)
@@ -232,11 +262,16 @@ public class UIManager : MonoBehaviour
 
     private void SetGameTimer(float elapsedSeconds) 
     {
-        int min = (int) Mathf.Floor(elapsedSeconds / 60);
-        int sec = (int) Mathf.Floor(elapsedSeconds % 60);
-        int ms = (int) ((elapsedSeconds % 1) * 100);
+        int[] rs = SecondsToTimer(elapsedSeconds);
+        gameTimer.text = rs[0].ToString("00") + ":" + rs[1].ToString("00") + ":" + rs[2].ToString("00");
+    }
 
-        gameTimer.text = min.ToString("00") + ":" + sec.ToString("00") + ":" + ms.ToString("00");
+    private int[] SecondsToTimer(float elapsedSeconds)
+    {
+        int min = (int)Mathf.Floor(elapsedSeconds / 60);
+        int sec = (int)Mathf.Floor(elapsedSeconds % 60);
+        int ms = (int)((elapsedSeconds % 1) * 100);
+        return new[] { min, sec, ms };
     }
 
     public void UpdateScaredTimer(float scaredSeconds)
@@ -288,6 +323,36 @@ public class UIManager : MonoBehaviour
     public void ResetLives()
     {
         foreach (Image img in livesImg) { img.enabled = true; } 
+    }
+
+    public void ShowGameOver()
+    {
+        gameOver.enabled = true;
+        StartCoroutine(ReturnToMenu(3.0f));
+    }
+
+    IEnumerator ReturnToMenu(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        Exit();
+    }
+
+    IEnumerator FlashingTitle()
+    {
+        while (true)
+        {
+            titleOutline.effectColor = new Color(130, 130, 130, 255);
+            yield return new WaitForSeconds(2.0f);
+            titleOutline.effectColor = new Color(0, 0, 0, 255);
+            yield return new WaitForSeconds(2.0f);
+        }
+    }
+
+    private void UpdateBestScoreAndTime()
+    {
+        highScore.text = PlayerPrefs.GetInt("HighScore", 0).ToString();
+        int[] rs = SecondsToTimer(PlayerPrefs.GetFloat("BestTime", 0.0f));
+        bestTime.text = rs[0].ToString("00") + ":" + rs[1].ToString("00") + ":" + rs[2].ToString("00");
     }
 
 }

@@ -14,7 +14,7 @@ public class PacStudentController : MonoBehaviour
     public static bool quit;
     private static bool colPlayed = false;
     private bool isListening = true;
-    private int lives;
+    private int lives = 3;
     private string lastInput = "";
     private string currentInput = "";
     private bool flippedH = false; // Initially it isn't flipped, first quad (TL)
@@ -22,6 +22,7 @@ public class PacStudentController : MonoBehaviour
     private int[,] map;
     private int[] currentPos = { 1, 1 }; // Fixed Start Position in relation to the 2D map
     private Vector3 startPosition;
+    private int berryCount;
 
     // Start is called before the first frame update
     void Start()
@@ -33,11 +34,13 @@ public class PacStudentController : MonoBehaviour
         uiManager = GameObject.FindWithTag("Managers").GetComponent<UIManager>();
         animator = wolf.GetComponent<Animator>();
         startPosition = wolf.transform.position;
+        BerryCount();
     }
 
     // Update is called once per frame
     void Update()
     {
+
 
         if (isListening)
         {
@@ -152,7 +155,7 @@ public class PacStudentController : MonoBehaviour
                 PlayEffects();
                 transform.eulerAngles = new Vector3(0, 0, 90.0f);
                 currentInput = "W";
-                tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y + 1.0f), 1.0f);
+                tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y + 1.0f), 0.7f);
                 if (rs == 2)
                 {
                     currentPos[0] = row - 1;
@@ -204,7 +207,7 @@ public class PacStudentController : MonoBehaviour
                 PlayEffects();
                 transform.eulerAngles = new Vector3(0, 0, 270.0f);
                 currentInput = "S";
-                tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y - 1.0f), 1.0f);
+                tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y - 1.0f), 0.7f);
                 if (rs == 2)
                 {
                     currentPos[0] = row - 1;
@@ -256,7 +259,7 @@ public class PacStudentController : MonoBehaviour
                 PlayEffects();
                 transform.eulerAngles = new Vector3(0, 180.0f, 0);
                 currentInput = "A";
-                tweener.AddTween(transform, pos, new Vector2(pos.x - 1.0f, pos.y), 1.0f);
+                tweener.AddTween(transform, pos, new Vector2(pos.x - 1.0f, pos.y), 0.7f);
                 if (rs == 3)
                 {
                     currentPos[0] = row;
@@ -308,7 +311,7 @@ public class PacStudentController : MonoBehaviour
                 PlayEffects();
                 transform.eulerAngles = new Vector3(0, 0, 0);
                 currentInput = "D";
-                tweener.AddTween(transform, pos, new Vector2(pos.x + 1.0f, pos.y), 1.0f);
+                tweener.AddTween(transform, pos, new Vector2(pos.x + 1.0f, pos.y), 0.7f);
                 if (rs == 3)
                 {
                     currentPos[0] = row;
@@ -486,7 +489,8 @@ public class PacStudentController : MonoBehaviour
         audioManager.PlayPerish();
         newDeathFX.GetComponent<ParticleSystem>().Play();
         StartCoroutine(DeleteDeathFX(newDeathFX)); // Detector to delete the death FX after it is done playing
-        StartCoroutine(ReduceLife(Mathf.Ceil(audioManager.audios[6].clip.length))); 
+        if (lives > 1) { StartCoroutine(ReduceLife(Mathf.Ceil(audioManager.audios[6].clip.length))); }
+        else { EndGame(); }
     }
 
     IEnumerator ReduceLife(float duration)
@@ -520,6 +524,33 @@ public class PacStudentController : MonoBehaviour
         Destroy(deathFX);
     }
 
+    private void EndGame()
+    {
+        uiManager.ShowGameOver(); // show gameover text
+        uiManager.DisableGame(); // Disable the game, doesn't stop Time
+        uiManager.SaveGameTimerAndScore(); // Save the score and timer if needed
+    }
+
+    private void BerryCount()
+    {
+        berryCount = 0;
+        for (int j = 0; j < map.GetLength(0); j++) 
+        {
+            for (int i = 0; i < map.GetLength(1); i++) 
+            {
+                if (map[j, i] == 5) { berryCount++; }
+            }
+        }
+    }
+
+    public void ConsumeBerry() 
+    { 
+        berryCount -= 1; 
+        if (berryCount == 0)
+        {
+            EndGame();
+        }
+    }
     public void DisableInputListener() { isListening = false; }
     public void EnableInputListener() { isListening = true; }
 
