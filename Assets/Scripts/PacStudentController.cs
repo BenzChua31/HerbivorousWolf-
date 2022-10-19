@@ -520,4 +520,7 @@ public class PacStudentController : MonoBehaviour
         Destroy(deathFX);
     }
 
+    public void DisableInputListener() { isListening = false; }
+    public void EnableInputListener() { isListening = true; }
+
 }

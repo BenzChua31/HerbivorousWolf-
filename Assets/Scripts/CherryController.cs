@@ -8,6 +8,7 @@ public class CherryController : MonoBehaviour
     public GameObject cherryPrefab;
     private Tweener tweener;
     private bool activeCoroutine = false;
+    private bool canSpawn = false;
 
     // Start is called before the first frame update
     void Start()
@@ -18,7 +19,7 @@ public class CherryController : MonoBehaviour
 
     void Update()
     {
-        if (!activeCoroutine) { StartCoroutine(AddCherry()); }
+        if (!activeCoroutine && canSpawn) { StartCoroutine(AddCherry()); }
     }
 
     IEnumerator AddCherry()
@@ -76,5 +77,7 @@ public class CherryController : MonoBehaviour
         yield return null;
     }
 
+    public void EnableSpawn() { canSpawn = true; }
+    public void DisableSpawn() { canSpawn = false; }
 
 }

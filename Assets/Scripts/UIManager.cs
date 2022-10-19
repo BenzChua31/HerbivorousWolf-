@@ -10,6 +10,10 @@ public class UIManager : MonoBehaviour
     private static UIManager itself;
     public RectTransform loadingTitle;
     public RectTransform loadingCanva;
+    private Text countDown;
+    private bool gameStarted = false;
+    private bool startCountdown = false;
+    private float countDownTime;
     private AudioManager audioManager;
     private static Text scorePts;
     private static int score;
@@ -20,11 +24,12 @@ public class UIManager : MonoBehaviour
     private bool isBlinking = false;
     private static List<Image> livesImg;
 
+
     private void Awake()
     {
         // Make it so that we will only have one instance of UIManager (Singleton approach)
-        if (!itself) { itself = this;  DontDestroyOnLoad(gameObject); }
-        else { Destroy(gameObject); } 
+        if (!itself) { itself = this; DontDestroyOnLoad(gameObject); }
+        else { Destroy(gameObject); }
     }
 
     // Start is called before the first frame update
@@ -37,13 +42,19 @@ public class UIManager : MonoBehaviour
         loadingTitle.offsetMax = new Vector2(loadingTitle.offsetMax.x, -loadingCanva.rect.height);
         audioManager = gameObject.GetComponent<AudioManager>();
         SceneManager.sceneLoaded += OnSceneLoaded;
-        // ongoingCoroutine = false;
+        countDownTime = audioManager.audios[0].clip.length;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (gameTimer != null) 
+        if (!gameStarted && startCountdown)
+        {
+            countDownTime -= Time.deltaTime;
+            SetCountDown((int) Mathf.Ceil(countDownTime));
+        }
+
+        if (gameStarted && gameTimer != null)
         {
             gameSeconds += Time.deltaTime;
             SetGameTimer(gameSeconds);
@@ -70,7 +81,6 @@ public class UIManager : MonoBehaviour
 
     IEnumerator Loading(int index)
     {
-        // ongoingCoroutine = true;
 
         float elapsedTime = 0.0f;
         float duration = 2.0f;
@@ -97,22 +107,21 @@ public class UIManager : MonoBehaviour
         { // the -600.0f is hard-coded for aspect ratio 4:3 
             loadingTitle.anchoredPosition = Vector3.Lerp(loadingTitle.anchoredPosition, new Vector2(0.0f, -loadingCanva.rect.height - 500.0f), elapsedTime / duration);
             elapsedTime += Time.deltaTime;
-            
-            // FIX THIS PLEASE
+
+            // REMINDER: MAKE THIS DYNAMIC IF POSSIBLE
             // Added this because I don't want the music to play onSceneLoad, but when LoadingScreen is sliding off
-            // since the LoadingScreen timing is hard-coded (Could probably check w/ GetCurrentScene for dynamic)
-            if (played == false && GameStateManager.currentScene == GameStateManager.SceneType.Level) 
+            // Since the LoadingScreen timing is hard-coded (Could probably check w/ GetCurrentScene for dynamic)
+            if (played == false && GameStateManager.currentScene == GameStateManager.SceneType.Level)
             {
                 played = true; // To prevent PlayLevel from being called more than once
                 audioManager.PlayLevel();
+                StartCountDown();
             }
 
             yield return null;
         }
 
         ResetLoadingTitle(); // Hopefully by now the Level has been loaded, hard-coded, same for loadingScreen duration anyways
-
-        // ongoingCoroutine = false;
 
         yield return null;
     }
@@ -122,19 +131,83 @@ public class UIManager : MonoBehaviour
         if (scene.buildIndex == 0)
         {
             GameObject.FindWithTag("Exit").GetComponent<Button>().onClick.AddListener(Exit);
+            countDown = GameObject.FindWithTag("Countdown").GetComponent<Text>();
             scorePts = GameObject.FindWithTag("Score").GetComponent<Text>();
             gameTimer = GameObject.FindWithTag("GameTimer").GetComponent<Text>();
             scaredTimer = GameObject.FindWithTag("ScaredTimer").GetComponent<Text>();
             // Slightly hard-coded since GetComponentInChildren<Text>() does not work (likely a bug?)
-            scaredLabel = GameObject.Find("ScaredTimer").GetComponent<Text>(); 
+            scaredLabel = GameObject.Find("ScaredTimer").GetComponent<Text>();
             foreach (GameObject go in GameObject.FindGameObjectsWithTag("Life")) { livesImg.Add(go.GetComponent<Image>()); }
             score = 0;
             gameSeconds = 0;
+            OnStartHold();
         }
         else if (scene.buildIndex == 1)
         {
             GameObject.FindWithTag("Lvl1Btn").GetComponent<Button>().onClick.AddListener(LoadFirst);
         }
+    }
+
+    // Pause the game on start until the loadingScreen is done loading
+    // Reason why it is better to not set timescale = 0 because loadingscreen animation depends on it, as well as the countdown
+    private void OnStartHold() 
+    {
+        // Disable Cherry Spawn 
+        GameObject.FindWithTag("CherryController").GetComponent<CherryController>().DisableSpawn(); 
+        // Disable gameTimer
+        gameStarted = false;
+        // Disable wolf collider
+        GameObject.FindWithTag("Wolf").GetComponent<CircleCollider2D>().enabled = false;
+        // Disable InputListener (don't want to detect any inputs or pre-store inputs)
+        GameObject.FindWithTag("WolfController").GetComponent<PacStudentController>().DisableInputListener();
+        // Disable BunnyMovement
+
+    }
+
+    private void OnStartUnhold() // After countdown ends 
+    {
+        GameObject.FindWithTag("CherryController").GetComponent<CherryController>().EnableSpawn();
+        gameStarted = true;
+        GameObject.FindWithTag("Wolf").GetComponent<CircleCollider2D>().enabled = true;
+        GameObject.FindWithTag("WolfController").GetComponent<PacStudentController>().EnableInputListener();
+
+    }
+
+    private void StartCountDown()
+    {
+        startCountdown = true;
+    }
+
+    private void SetCountDown(int second)
+    {
+        if (!countDown.enabled && second >= 0) { countDown.enabled = true; }
+        else if (countDown.enabled && second < 0) 
+        { 
+            countDown.enabled = false;
+            OnStartUnhold();
+        }
+
+        if (second >= 0)
+        {
+            if (second < 1) { countDown.text = "GO!"; }
+            else if (second > 3) { countDown.text = ""; }
+            else { countDown.text = second.ToString(); }
+        }
+    }
+
+    public void PauseGame()
+    {
+        // Wolf movement, bunny, cherry movement use tween which depends on deltaTime
+        // cherry timer, game timer, scared timer depends on Time too
+        Time.timeScale = 0;
+        // Disable Input listener, don't want to detect any inputs while paused
+        GameObject.FindWithTag("WolfController").GetComponent<PacStudentController>().DisableInputListener();
+    }
+
+    public void UnPauseGame()
+    {
+        Time.timeScale = 1;
+        GameObject.FindWithTag("WolfController").GetComponent<PacStudentController>().EnableInputListener();
     }
 
     private void SetGameState(int index)
