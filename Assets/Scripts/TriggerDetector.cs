@@ -70,14 +70,13 @@ public class TriggerDetector : MonoBehaviour
                 if (selfController.IsScaredState())
                 {
                     UIManager.AddScore(300);
-                    audioManager.PlayBunnyDeath();
-                    Destroy(gameObject);
+                    gameObject.GetComponent<CircleCollider2D>().enabled = false;
+                    selfController.PlayBunnyFuneral();
                 } 
                 else
                 {
                     PacStudentController psc = GameObject.FindWithTag("WolfController").GetComponent<PacStudentController>();
                     psc.PlayWolfFuneral();
-                    psc.ReduceLife();
                 }
             }
         }

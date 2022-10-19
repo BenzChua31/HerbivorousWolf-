@@ -84,4 +84,17 @@ public class BunnyController : MonoBehaviour
 
     }
 
+    public void PlayBunnyFuneral()
+    {
+        animator.SetBool("Dead", true);
+        audioManager.PlayBunnyDeath();
+        StartCoroutine(RemoveBunny(audioManager.audios[10].clip.length));
+    }
+
+    IEnumerator RemoveBunny(float duration) // Temporary
+    {
+        yield return new WaitForSeconds(duration);
+        Destroy(gameObject);
+    }
+
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PacStudentController : MonoBehaviour
 {
-    
+
     [SerializeField] private GameObject wolf;
     public Sprite[] wolfState;
     private AudioManager audioManager;
@@ -239,7 +239,7 @@ public class PacStudentController : MonoBehaviour
             int teleport = IsEnteringTeleporter(col, row);
             if (teleport == 2)
             {
-                if (!flippedV) 
+                if (!flippedV)
                 {
                     flippedV = true;
                     currentPos[0] = row;
@@ -309,12 +309,12 @@ public class PacStudentController : MonoBehaviour
                 transform.eulerAngles = new Vector3(0, 0, 0);
                 currentInput = "D";
                 tweener.AddTween(transform, pos, new Vector2(pos.x + 1.0f, pos.y), 1.0f);
-                if (rs == 3) 
+                if (rs == 3)
                 {
                     currentPos[0] = row;
                     currentPos[1] = col;
                     return 1;
-                } 
+                }
                 else
                 {
                     currentPos[0] = adjRow;
@@ -334,7 +334,7 @@ public class PacStudentController : MonoBehaviour
     private int CheckWalkable(int row, int col)
     {
         // Check if coordinates are out of bounds first
-        if (IsOutOfBounds(col, row)) 
+        if (IsOutOfBounds(col, row))
         {
             return 0;
         }
@@ -342,7 +342,7 @@ public class PacStudentController : MonoBehaviour
         // Check if entering a mirrored quadrant 
         int rs = IsEnteringMirrored(col, row);
         if (rs == 1) // set FlipH to indicate that we are now in the flipped quadrant
-        { 
+        {
             if (flippedH) { flippedH = false; }
             else { flippedH = true; }
             return 2; // If we are entering a mirrored quadrant, it is guaranteed that it is walkable
@@ -412,6 +412,11 @@ public class PacStudentController : MonoBehaviour
         }
     }
 
+    private void StopParticles()
+    {
+        wolf.GetComponent<ParticleSystem>().Stop();
+    }
+
     private void PlayCollisionFX()
     {
         GameObject colFX = wolf.GetComponent<Transform>().Find("CollisionFx").gameObject;
@@ -449,7 +454,7 @@ public class PacStudentController : MonoBehaviour
         transform.GetComponent<ParticleSystem>().Stop();
         tweener.AddTween(transform, start, end, 1.0f);
         StartCoroutine(EnableRend(rend, transform, anim, collider));
-    } 
+    }
 
     IEnumerator EnableRend(SpriteRenderer rend, Transform transform, Animator animator, CircleCollider2D collider)
     {
@@ -465,35 +470,45 @@ public class PacStudentController : MonoBehaviour
         yield return null;
     }
 
-    public void ReduceLife()
-    {
-        lives -= 1;
-        uiManager.ReduceLife();
-        currentPos[0] = 1; currentPos[1] = 1;
-        flippedH = false; flippedV = false;
-        colPlayed = false;
-        wolf.transform.position = startPosition; // Reset to start 
-        animator.SetBool("Dead", false);
-        animator.SetBool("Eating", false);
-        isListening = true;
-    }
-
     public void PlayWolfFuneral()
     {
-        isListening = false;
+        isListening = false; // Disable InputListener
         lastInput = ""; currentInput = ""; // Reset Inputs 
         tweener.RemoveTweens(); // RemoveAllTweens 
-        animator.SetBool("Dead", true);
         PlayDeathFX();
     }
 
-    private void PlayDeathFX()
+    private void PlayDeathFX() // Play death animation, sfx and particle effect
     {
         GameObject deathFX = wolf.GetComponent<Transform>().Find("DeathFx").gameObject;
         GameObject newDeathFX = Instantiate(deathFX, deathFX.GetComponent<Transform>().position, Quaternion.identity);
-        newDeathFX.GetComponent<ParticleSystem>().Play();
-        StartCoroutine(DeleteDeathFX(newDeathFX));
+        animator.SetBool("Dead", true);
         audioManager.PlayPerish();
+        newDeathFX.GetComponent<ParticleSystem>().Play();
+        StartCoroutine(DeleteDeathFX(newDeathFX)); // Detector to delete the death FX after it is done playing
+        StartCoroutine(ReduceLife(Mathf.Ceil(audioManager.audios[6].clip.length))); 
+    }
+
+    IEnumerator ReduceLife(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+
+        // Reduce Life after death animation ends
+        lives -= 1;
+        uiManager.ReduceLife(); 
+        // reset to start Position
+        currentPos[0] = 1; currentPos[1] = 1; 
+        flippedH = false; flippedV = false;
+        wolf.transform.position = startPosition;
+        wolf.transform.rotation = Quaternion.identity;
+        // reset wall collision detector
+        colPlayed = false;
+        // reset wolf animation back to normal from dead state
+        animator.SetBool("Dead", false);
+        StopEffects();
+        StopParticles();
+        // Enable inputlistener
+        isListening = true;
     }
 
     IEnumerator DeleteDeathFX(GameObject deathFX)
