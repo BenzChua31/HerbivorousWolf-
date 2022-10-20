@@ -70,25 +70,25 @@ public class GhostController : MonoBehaviour
 
         if (x == -0.5 && y == 1.5) 
         { 
-            currentPos[0] = 13; currentPos[1] = 13;
+            currentPos = new int[] { 13, 13 };
             flippedH = false; flippedV = false;
             bunnyType = 1;
         }
         else if (x == 0.5 && y == 1.5) 
         { 
-            currentPos[0] = 13; currentPos[1] = 13;
+            currentPos = new int[] { 13, 13 };
             flippedH = false; flippedV = true;
             bunnyType = 2;
         }
         else if(x == -0.5 && y == 0.5) 
         { 
-            currentPos[0] = 14; currentPos[1] = 13;
+            currentPos = new int[] { 14, 13 };
             flippedH = false; flippedV = false;
             bunnyType = 3;
         }
         else if(x == 0.5 && y == 0.5) 
-        { 
-            currentPos[0] = 14; currentPos[1] = 13;
+        {
+            currentPos = new int[] { 14, 13 };
             flippedH = false; flippedV = true;
             bunnyType = 4;
         }

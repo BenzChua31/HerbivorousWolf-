@@ -551,6 +551,7 @@ public class PacStudentController : MonoBehaviour
             EndGame();
         }
     }
+
     public void DisableInputListener() { isListening = false; }
     public void EnableInputListener() { isListening = true; }
 
