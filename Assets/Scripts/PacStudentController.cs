@@ -554,4 +554,12 @@ public class PacStudentController : MonoBehaviour
     public void DisableInputListener() { isListening = false; }
     public void EnableInputListener() { isListening = true; }
 
+    // indicates which quadrant and position the wolf is in 
+    public int[] GetWolfPosition() 
+    {
+        int fH = (flippedH) ? 1 : 0;
+        int fV = (flippedV) ? 1 : 0;
+        return new int[] { currentPos[0], currentPos[1], fH, fV };
+    }
+
 }

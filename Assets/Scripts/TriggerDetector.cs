@@ -7,8 +7,8 @@ using UnityEngine.UI;
 public class TriggerDetector : MonoBehaviour
 {
     private PacStudentController psc;
-    private List<BunnyController> bunnyControllers; // For power pellet to access all other bunny controllers
-    private BunnyController selfController; // To access its own controller
+    private List<GhostController> bunnyControllers; // For power pellet to access all other bunny controllers
+    private GhostController selfController; // To access its own controller
     private AudioManager audioManager;
 
     // UNITY has waitforsecondsrealtime to coroutine without being affected by TimeScale
@@ -26,15 +26,15 @@ public class TriggerDetector : MonoBehaviour
 
         if (gameObject.CompareTag("Power"))
         {
-            bunnyControllers = new List<BunnyController>();
+            bunnyControllers = new List<GhostController>();
             foreach (GameObject go in GameObject.FindGameObjectsWithTag("Bunny"))
             {
                 // Debug.Log("Total 16 calls"); 4 meat x 4 bunny
-                bunnyControllers.Add(go.GetComponent<BunnyController>()); 
+                bunnyControllers.Add(go.GetComponent<GhostController>()); 
             }
         }
 
-        if (gameObject.CompareTag("Bunny")) { selfController = gameObject.GetComponent<BunnyController>(); }
+        if (gameObject.CompareTag("Bunny")) { selfController = gameObject.GetComponent<GhostController>(); }
     }
 
     // Update is called once per frame
@@ -63,7 +63,7 @@ public class TriggerDetector : MonoBehaviour
             {
                 audioManager.PlayPowerUp();
                 audioManager.PlayScaredSong();
-                foreach (BunnyController bc in bunnyControllers)
+                foreach (GhostController bc in bunnyControllers)
                 {
                     bc.ActivateScaredState();
                 }

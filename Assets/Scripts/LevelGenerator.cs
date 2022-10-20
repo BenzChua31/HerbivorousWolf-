@@ -29,10 +29,15 @@ public class LevelGenerator : MonoBehaviour
                     {0,0,0,0,0,2,5,4,3,4,4,3,0,3},
                     {0,0,0,0,0,2,5,4,4,0,0,0,0,0},
                     {0,0,0,0,0,2,5,4,4,0,3,4,4,0},
-                    {2,2,2,2,2,1,5,3,3,0,4,0,0,0},
-                    {0,0,0,0,0,0,5,0,0,0,4,0,0,0},
+                    {2,2,2,2,2,1,5,3,3,0,4,0,0,0}, 
+                    {0,0,0,0,0,0,5,0,0,0,4,0,0,0}, 
                     };
     }
+    // Calculating distance between two positions eachh in different quadrants (14 = final index of row, 13 = final index of col)
+    // (11, 10) (11, 10) || 13 - 10 = 3 || 13 - 10 = 3 || 3 + 3 + 1 = 7 (Calculating for Column Difference x-axis)
+    // (14, 9) (13, 9) || 14 - 14 = 0 || 13 - 13 = 0 || 0 + 0 + 1 = 3 (Calculating for Row Difference y-axis)
+    // Pattern is that there is always 1 move required to cross the border into the mirrored quadrant. 
+    // So get the distance to the edge of the border for both sides, add both of them up and add 1.
 
     // Start is called before the first frame update
     void Start()
