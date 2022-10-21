@@ -159,6 +159,12 @@ public class GhostController : MonoBehaviour
         Destroy(gameObject);
     }
 
+    // WARNING: The algorithm implemented is not fast or save as much space
+    // I couldn't scratch my head enough to come up with a faster algorithm
+    // Thought about PriorityQueues w/ custom comparables but nah
+    // Thought about using Sort() but that is worst 
+    // Thought about A* but not quite sure how to implement it for a moving target
+    // Current Algorithm is BFS: where we determine the next adjacent cell to move to based on DIST
     private void DeterminePath() // chooses one of the paths out of the available paths
     {
         Transform transform = gameObject.transform;
@@ -170,105 +176,239 @@ public class GhostController : MonoBehaviour
 
             Dictionary<string, int[]> rs = GetAvailablePaths(row, col);
 
-            int[] leftrs = null;
-            int[] toprs = null;
-            int[] rightrs = null;
-            int[] botrs = null;
+            // Order: left, top, right, bot
+            List<int[]> dir = new List<int[]>();
+            dir[0] = null; dir[1] = null;
+            dir[2] = null; dir[3] = null;
 
-            // The dist to PacStudent for each adjacent node (1625 is the maxDist w/o sqrt)
-            int left = 1625;
-            int top = 1625;
-            int right = 1625;
-            int bot = 1625;
+            // -1 means null 
+            int[] opts = { -1, -1, -1, -1 };
 
             // CalculateDistance of adjacent cell to wolf
             if (rs.ContainsKey("left"))
             {
-                leftrs = rs["left"];
-                left = CalculateDist(leftrs[0], leftrs[1], leftrs[2], leftrs[3]);
+                int[] leftrs = rs["left"];
+                dir[0] = leftrs;
+                opts[0] = CalculateDistToPac(leftrs[0], leftrs[1], leftrs[2], leftrs[3]);
             }
             if (rs.ContainsKey("top"))
             {
-                toprs = rs["top"];
-                top = CalculateDist(toprs[0], toprs[1], toprs[2], toprs[3]);
+                int[] toprs = rs["top"];
+                dir[1] = toprs;
+                opts[1] = CalculateDistToPac(toprs[0], toprs[1], toprs[2], toprs[3]);
             }
             if (rs.ContainsKey("right"))
             {
-                rightrs = rs["right"];
-                right = CalculateDist(rightrs[0], rightrs[1], rightrs[2], rightrs[3]);
+                int[] rightrs = rs["right"];
+                dir[2] = rightrs;
+                opts[2] = CalculateDistToPac(rightrs[0], rightrs[1], rightrs[2], rightrs[3]);
             }
             if (rs.ContainsKey("bot"))
             {
-                botrs = rs["bot"];
-                bot = CalculateDist(botrs[0], botrs[1], botrs[2], botrs[3]);
+                int[] botrs = rs["bot"];
+                dir[3] = botrs;
+                opts[3] = CalculateDistToPac(botrs[0], botrs[1], botrs[2], botrs[3]);
             }
 
-            // Get Best Path (could prob break this part of the code and split it into different sections for bunnyType)
-            int bestPath = Mathf.Min(left, top, right, bot); 
-
-            // Prioritize keeping the original path direction
-            if (currentDirection.Equals("W"))
-            {
-                if (bestPath == top && toprs != null) 
-                { MoveUp(transform, transform.position, toprs[0], toprs[1]); }
-
-                else if (bestPath == left && leftrs != null) 
-                { MoveLeft(transform, transform.position, leftrs[0], leftrs[1]); }
-
-                else if (bestPath == right && rightrs != null) 
-                { MoveRight(transform, transform.position, rightrs[0], rightrs[1]); }
-
-                else 
-                { MoveBtm(transform, transform.position, botrs[0], botrs[1]); } 
-                // If all above option fails, means bot is def the only option (backtracking is the only option)
-            }
-            else if (currentDirection.Equals("A"))
-            {
-                if (bestPath == left && leftrs != null)
-                { MoveLeft(transform, transform.position, leftrs[0], leftrs[1]); }
-
-                else if (bestPath == bot && botrs != null)
-                { MoveBtm(transform, transform.position, botrs[0], botrs[1]); }
-
-                else if (bestPath == top && toprs != null)
-                { MoveUp(transform, transform.position, toprs[0], toprs[1]); }
-
-                else
-                { MoveRight(transform, transform.position, rightrs[0], rightrs[1]); }
-            }
-            else if (currentDirection.Equals("S"))
-            {
-                if (bestPath == bot && botrs != null)
-                { MoveBtm(transform, transform.position, botrs[0], botrs[1]); }
-
-                else if (bestPath == right && rightrs != null)
-                { MoveRight(transform, transform.position, rightrs[0], rightrs[1]); }
-
-                else if (bestPath == left && leftrs != null)
-                { MoveLeft(transform, transform.position, leftrs[0], leftrs[1]); }
-
-                else 
-                { MoveUp(transform, transform.position, toprs[0], toprs[1]); }
-            }
-            else if (currentDirection.Equals("D"))
-            {
-                if (bestPath == right && rightrs != null)
-                { MoveRight(transform, transform.position, rightrs[0], rightrs[1]); }
-
-                else if (bestPath == top && toprs != null)
-                { MoveUp(transform, transform.position, toprs[0], toprs[1]); }
-
-                else if (bestPath == bot && botrs != null)
-                { MoveBtm(transform, transform.position, botrs[0], botrs[1]); }
-
-                else 
-                { MoveLeft(transform, transform.position, leftrs[0], leftrs[1]); }
-            }
+            // Path determination for each direction will be in their own methods
+            if (currentDirection.Equals("W")) { MoveDirectionW(dir, opts); }
+            else if (currentDirection.Equals("A")) { MoveDirectionA(dir, opts); }
+            else if (currentDirection.Equals("S")) { MoveDirectionS(dir, opts); }
+            else if (currentDirection.Equals("D")) { MoveDirectionD(dir, opts); }
 
         }
     }
 
-    private int CalculateDist(int row, int col, int fH, int fV)
+    private void MoveDirectionW(List<int[]> dir, int[] opts)
+    {
+        int bestPath;
+
+        bestPath = GetBestPath(opts[0], opts[1], opts[2]);
+        // Check if our preferred path can be taken. 
+        // if dir is null, just straight away skip.
+        if (bestPath == opts[1] && dir[1] != null)
+        {
+            MoveUp(transform, transform.position, dir[1][0], dir[1][1]);
+        }
+        else
+        {
+            bestPath = GetBestPath(opts[0], -1, opts[2]);
+            // If preferred path unable to take, evaluate between the left and right path
+            if (bestPath == opts[0] && dir[0] != null)
+            {
+                MoveLeft(transform, transform.position, dir[0][0], dir[0][1]);
+            }
+            else if (bestPath == opts[2] && dir[2] != null)
+            {
+                MoveRight(transform, transform.position, dir[2][0], dir[2][1]);
+            }
+            else
+            {
+                // Worst comes to worst, we have to backtrack (if we reached here, means this is the only path)
+                // As there will always at least be a path
+                MoveBtm(transform, transform.position, dir[3][0], dir[3][1]);
+            }
+        }
+    }
+
+    private void MoveDirectionA(List<int[]> dir, int[] opts)
+    {
+        int bestPath;
+
+        bestPath = GetBestPath(opts[3], opts[0], opts[1]);
+        if (bestPath == opts[0] && dir[0] != null)
+        {
+            MoveLeft(transform, transform.position, dir[0][0], dir[0][1]);
+        }
+        else
+        {
+            bestPath = GetBestPath(opts[3], -1, opts[1]);
+            if (bestPath == opts[1] && dir[1] != null)
+            {
+                MoveUp(transform, transform.position, dir[1][0], dir[1][1]);
+            }
+            else if (bestPath == opts[3] && dir[3] != null)
+            {
+                MoveBtm(transform, transform.position, dir[3][0], dir[3][1]);
+            }
+            else
+            {
+                MoveRight(transform, transform.position, dir[2][0], dir[2][1]);
+            }
+        }
+    }
+
+    private void MoveDirectionS(List<int[]> dir, int[] opts)
+    {
+        int bestPath;
+
+        bestPath = GetBestPath(opts[2], opts[3], opts[0]);
+        if (bestPath == opts[3] && dir[3] != null)
+        {
+            MoveBtm(transform, transform.position, dir[3][0], dir[3][1]);
+        }
+        else
+        {
+            bestPath = GetBestPath(opts[2], -1, opts[0]);
+            if (bestPath == opts[2] && dir[2] != null)
+            {
+                MoveRight(transform, transform.position, dir[2][0], dir[2][1]);
+            }
+            else if (bestPath == opts[0] && dir[0] != null)
+            {
+                MoveLeft(transform, transform.position, dir[0][0], dir[0][1]);
+            }
+            else
+            {
+                MoveUp(transform, transform.position, dir[1][0], dir[1][1]);
+            }
+        }
+    }
+
+    private void MoveDirectionD(List<int[]> dir, int[] opts)
+    {
+        int bestPath;
+
+        bestPath = GetBestPath(opts[1], opts[2], opts[3]);
+        if (bestPath == opts[2] && dir[2] != null)
+        {
+            MoveRight(transform, transform.position, dir[2][0], dir[2][1]);
+        }
+        else
+        {
+            bestPath = GetBestPath(opts[1], -1, opts[3]);
+            if (bestPath == opts[1] && dir[1] != null)
+            {
+                MoveUp(transform, transform.position, dir[1][0], dir[1][1]);
+            }
+            else if (bestPath == opts[3] && dir[3] != null)
+            {
+                MoveBtm(transform, transform.position, dir[3][0], dir[3][1]);
+            }
+            else
+            {
+                MoveLeft(transform, transform.position, dir[0][0], dir[0][1]);
+            }
+        }
+    }
+
+
+    private int GetBestPath(int op1, int op2, int op3)
+    {
+        if (bunnyType == 1) { return MovementType1(op1, op2, op3); }
+        else if (bunnyType == 2) { return MovementType2(op1, op2, op3); }
+        else if (bunnyType == 3) { return MovementType3(op1, op2, op3); }
+        else { return MovementType4(op1, op2, op3); }
+    }
+
+    private int MovementType1(int op1, int op2, int op3) // Furthest from pacstudent
+    {
+        // this one doesn't need a -1 filter.
+        // if max returns -1, then all options are null
+        return Mathf.Max(op1, op2, op3);
+    }
+
+    private int MovementType2(int op1, int op2, int op3) // Closest to PacStudent
+    {
+        // Do this so that it won't return -1 values
+        // 1405 is the max possible distance you can get
+        if (op1 == -1) { op1 = 1405; }
+        if (op2 == -1) { op2 = 1405; }
+        if (op3 == -1) { op3 = 1405; }
+
+        return Mathf.Min(op1, op2, op3);
+    }
+
+    private int MovementType3(int op1, int op2, int op3) // Random
+    {
+        List<int> ops = new List<int>();
+        if (op1 != -1) { ops.Add(op1); }
+        if (op2 != -1) { ops.Add(op2); }
+        if (op3 != -1) { ops.Add(op3); }
+
+        int choice = Random.Range(0, ops.Count); 
+        if (choice == 0) { return ops[0]; }
+        else if (choice == 1) { return ops[1]; }
+        else { return ops[2]; }
+    }
+
+    // Prioritize sticking to the outer walls (moving clockwise)
+    // So movement priority is left --> top --> right (W)
+    // bot --> left --> top (A)
+    // right --> bot --> left (S)
+    // top --> right --> bot (D)
+
+    private int MovementType4(int op1, int op2, int op3)
+    {
+        if (op1 != -1) { return op1; } // Prioritize op1 (disregarding dist)
+        else if (op2 != -1) { return op2; } // Else prioritize op2
+        else { return op3; } // Lastly op3
+        // if all -1, then their dir will be null and the final option will be called instead
+    }
+
+    // For type4 bunny to move to the bottom left corner (1, 1), fH = true, to begin its clockwise cycle
+    private int CalculateDistToEdge(int row, int col, int fH, int fV)
+    {
+        int blR = 1;
+        int blC = 1;
+        int blFH = 1;
+        int blFV = 0;
+
+        int diffX;
+        int diffY;
+
+        // final index 13 + final index 14 (13 + 14 = 27)
+        if (fH == blFH) { diffY = Mathf.Abs(row - blR); }
+        else { diffY = 27 - blR - row + 1; }
+
+        // final index 13 for both sides (13 + 13 = 26)
+        if (fV == blFV) { diffX = Mathf.Abs(col - blC); }
+        else { diffX = 26 - blC - col + 1; }
+
+        return diffX * diffX + diffY * diffY; // don't need to sqrt, it is still unique
+    }
+
+    private int CalculateDistToPac(int row, int col, int fH, int fV)
     {
         int[] wolfPos = wolfController.GetWolfPosition();
         int wolfR = wolfPos[0];
