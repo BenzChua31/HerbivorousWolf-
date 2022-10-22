@@ -11,6 +11,8 @@ public class GhostController : MonoBehaviour
     private PacStudentController wolfController;
     private Tweener tweener;
 
+    private bool hasBeginCycle; // special var for bunny4 to track if it has started its around-the-map cycle
+    private bool hasLeftSpawn; // if the bunny has left spawn area
     private bool isScared; // If the ghost is scared
     private bool isRecovering; // If the ghost is recovering
     private bool isBlinking; // If the timer is blinking
@@ -25,12 +27,15 @@ public class GhostController : MonoBehaviour
     private int mapRows;
     private int mapCols;
     private int[] currentPos;
+    private int[] spawnEntryPos = { 12, 13 };
     private string currentDirection; // I know enums exist but it's just my preference (W, A, S, D)
     private Vector3 startPosition;
 
     // Start is called before the first frame update
     void Start()
     {
+        hasBeginCycle = false;
+        hasLeftSpawn = false;
         isScared = false;
         isRecovering = false;
         quit = false;
@@ -56,7 +61,26 @@ public class GhostController : MonoBehaviour
 
         if (!quit)
         {
+            if (!hasLeftSpawn) { LeaveSpawn(); }
+            if (bunnyType == 4 && hasLeftSpawn && !hasBeginCycle) { }
             // DeterminePath();
+        }
+    }
+
+    private void LeaveSpawn()
+    {
+        // Hard-coded as the spawn area will be fixed and I need the bunnies to leave the spawn area
+        if ((bunnyType == 1 || bunnyType == 2) && currentPos[0] != 11)
+        {
+            MoveUp(transform, transform.position, currentPos[0] - 1, currentPos[1]);
+        } 
+        else if ((bunnyType == 3 || bunnyType == 4) && currentPos[0] != 11)
+        {
+            MoveBtm(transform, transform.position, currentPos[0] + 1, currentPos[1]);
+        }
+        else
+        {
+            hasLeftSpawn = true;
         }
     }
 
@@ -163,7 +187,9 @@ public class GhostController : MonoBehaviour
     // I couldn't scratch my head enough to come up with a faster algorithm
     // Thought about PriorityQueues w/ custom comparables but nah
     // Thought about using Sort() but that is worst 
-    // Thought about A* but not quite sure how to implement it for a moving target
+    // Thought about A* but not quite sure how to implement it for a moving target 
+       // Update: it is possible but it's too late, I already implemented an algorithm and got other assignments
+       // during holidays i guess 
     // Current Algorithm is BFS: where we determine the next adjacent cell to move to based on DIST
     private void DeterminePath() // chooses one of the paths out of the available paths
     {
@@ -331,7 +357,6 @@ public class GhostController : MonoBehaviour
             }
         }
     }
-
 
     private int GetBestPath(int op1, int op2, int op3)
     {
@@ -615,6 +640,9 @@ public class GhostController : MonoBehaviour
             return 0;
         }
 
+        // Check if it is spawn entrance (we want to prevent them from re-entering)
+        if (IsSpawnEntrance(row, col)) { return 0; }
+
         // Check if about to enter teleporter entrance
         if (IsEnteringTeleporter(col, row)) { return 0; }
 
@@ -636,6 +664,12 @@ public class GhostController : MonoBehaviour
             else { return 0; }
         }
 
+    }
+
+    // Check if it is a spawn entrance
+    private bool IsSpawnEntrance(int di, int dj)
+    {
+        return dj != spawnEntryPos[0]; // hard-coded entrance y-axis coordinate since spawn area won't be changed
     }
 
     // If it is out of bounds aka outside the map
