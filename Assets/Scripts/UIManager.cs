@@ -70,6 +70,7 @@ public class UIManager : MonoBehaviour
     public void Exit()
     {
         PacStudentController.quit = true;
+        GhostController.quit = true;
         audioManager.PlayMainMenu();
         ShowLoading(1);
     }
@@ -175,6 +176,7 @@ public class UIManager : MonoBehaviour
         // Disable InputListener (don't want to detect any inputs or pre-store inputs)
         GameObject.FindWithTag("WolfController").GetComponent<PacStudentController>().DisableInputListener();
         // Disable BunnyMovement
+        GhostController.gameStarted = false;
 
     }
 
@@ -182,6 +184,7 @@ public class UIManager : MonoBehaviour
     {
         GameObject.FindWithTag("CherryController").GetComponent<CherryController>().EnableSpawn();
         gameStarted = true;
+        GhostController.gameStarted = true;
         GameObject.FindWithTag("Wolf").GetComponent<CircleCollider2D>().enabled = true;
         GameObject.FindWithTag("WolfController").GetComponent<PacStudentController>().EnableInputListener();
 

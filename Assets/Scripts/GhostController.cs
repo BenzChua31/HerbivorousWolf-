@@ -17,6 +17,7 @@ public class GhostController : MonoBehaviour
     private bool isRecovering; // If the ghost is recovering
     private bool isBlinking; // If the timer is blinking
     public static bool quit; // If the game has quit, we want to disable all movement
+    public static bool gameStarted; // If the game has started (should start after countdown)
 
     private float scaredSeconds = 10;
     private int bunnyType; // 1 : Further, 2 : Closer, 3 : Random, 4 : Clockwise around map along outside of map
@@ -28,7 +29,9 @@ public class GhostController : MonoBehaviour
     private int mapCols;
     private int[] currentPos;
     private int[] spawnEntryPos = { 12, 13 };
-    private string currentDirection; // I know enums exist but it's just my preference (W, A, S, D)
+    // I know enums are way better but
+    // I've got other assignments, i will make sure to implement them itf
+    private string currentDirection; 
     private Vector3 startPosition;
 
     // Start is called before the first frame update
@@ -38,13 +41,14 @@ public class GhostController : MonoBehaviour
         hasLeftSpawn = false;
         isScared = false;
         isRecovering = false;
+        gameStarted = false;
         quit = false;
         tweener = gameObject.GetComponent<Tweener>();
         animator = gameObject.GetComponent<Animator>();
         GameObject managers = GameObject.FindWithTag("Managers");
         uiManager = managers.GetComponent<UIManager>();
         audioManager = managers.GetComponent<AudioManager>();
-        wolfController = managers.GetComponent<PacStudentController>();
+        wolfController = GameObject.FindWithTag("WolfController").GetComponent<PacStudentController>();
         map = LevelGenerator.getMap();
         mapRows = map.GetLength(0);
         mapCols = map.GetLength(1);
@@ -59,28 +63,46 @@ public class GhostController : MonoBehaviour
             SetScaredTimer();
         }
 
-        if (!quit)
+        if (!quit && gameStarted)
         {
+            if (bunnyType == 1) { Debug.Log(currentPos[0] + " " + currentPos[1]); }
+
             if (!hasLeftSpawn) { LeaveSpawn(); }
-            if (bunnyType == 4 && hasLeftSpawn && !hasBeginCycle) { }
-            // DeterminePath();
+            else
+            {
+                if (bunnyType == 4 && currentPos[0] == 1 && currentPos[1] == 1 && flippedH && !flippedV)
+                {
+                    hasBeginCycle = true; // get it to start its around-the-map cycle
+                }
+
+                if (bunnyType == 4 && !hasBeginCycle) { DeterminePath(2); }
+                else { DeterminePath(1); }
+            }
         }
     }
 
     private void LeaveSpawn()
     {
+        int fH = (flippedH) ? 1 : 0;
+        int fV = (flippedV) ? 1 : 0;
+
         // Hard-coded as the spawn area will be fixed and I need the bunnies to leave the spawn area
-        if ((bunnyType == 1 || bunnyType == 2) && currentPos[0] != 11)
+        if (!tweener.TweenExists(transform))
         {
-            MoveUp(transform, transform.position, currentPos[0] - 1, currentPos[1]);
-        } 
-        else if ((bunnyType == 3 || bunnyType == 4) && currentPos[0] != 11)
-        {
-            MoveBtm(transform, transform.position, currentPos[0] + 1, currentPos[1]);
-        }
-        else
-        {
-            hasLeftSpawn = true;
+            if ((bunnyType == 1 || bunnyType == 2) && currentPos[0] != 11)
+            {
+                int[] rs = CheckTopPath(currentPos[0], currentPos[1]);
+                MoveUp(transform, transform.position, rs[0], rs[1], rs[2], rs[3]);
+            }
+            else if ((bunnyType == 3 || bunnyType == 4) && currentPos[0] != 11)
+            {
+                int[] rs = CheckBtmPath(currentPos[0], currentPos[1]);
+                MoveBtm(transform, transform.position, rs[0], rs[1], rs[2], rs[3]);
+            }
+            else
+            {
+                hasLeftSpawn = true;
+            }
         }
     }
 
@@ -92,29 +114,33 @@ public class GhostController : MonoBehaviour
         float x = startPosition.x;
         float y = startPosition.y;
 
-        if (x == -0.5 && y == 1.5) 
+        if (bunny.name.Equals("Bunny1")) 
         { 
             currentPos = new int[] { 13, 13 };
             flippedH = false; flippedV = false;
             bunnyType = 1;
+            currentDirection = "W";
         }
-        else if (x == 0.5 && y == 1.5) 
+        else if (bunny.name.Equals("Bunny2")) 
         { 
             currentPos = new int[] { 13, 13 };
             flippedH = false; flippedV = true;
             bunnyType = 2;
+            currentDirection = "W";
         }
-        else if(x == -0.5 && y == 0.5) 
+        else if (bunny.name.Equals("Bunny3")) 
         { 
             currentPos = new int[] { 14, 13 };
             flippedH = false; flippedV = false;
             bunnyType = 3;
+            currentDirection = "S";
         }
-        else if(x == 0.5 && y == 0.5) 
+        else if (bunny.name.Equals("Bunny4")) 
         {
             currentPos = new int[] { 14, 13 };
             flippedH = false; flippedV = true;
             bunnyType = 4;
+            currentDirection = "S";
         }
     }
 
@@ -191,7 +217,7 @@ public class GhostController : MonoBehaviour
        // Update: it is possible but it's too late, I already implemented an algorithm and got other assignments
        // during holidays i guess 
     // Current Algorithm is BFS: where we determine the next adjacent cell to move to based on DIST
-    private void DeterminePath() // chooses one of the paths out of the available paths
+    private void DeterminePath(int dest) // dest to determine if calculateDist to edge or pacStudent
     {
         Transform transform = gameObject.transform;
 
@@ -204,36 +230,40 @@ public class GhostController : MonoBehaviour
 
             // Order: left, top, right, bot
             List<int[]> dir = new List<int[]>();
-            dir[0] = null; dir[1] = null;
-            dir[2] = null; dir[3] = null;
+            for (int i = 0; i < 4; i++) { dir.Add(null); }
 
             // -1 means null 
             int[] opts = { -1, -1, -1, -1 };
 
+            // 1 : DistToPac, 2 : DistToBLEdge
             // CalculateDistance of adjacent cell to wolf
             if (rs.ContainsKey("left"))
             {
                 int[] leftrs = rs["left"];
                 dir[0] = leftrs;
-                opts[0] = CalculateDistToPac(leftrs[0], leftrs[1], leftrs[2], leftrs[3]);
+                if (dest == 1) { opts[0] = CalculateDistToPac(leftrs[0], leftrs[1], leftrs[2], leftrs[3]); }
+                else { opts[0] = CalculateDistToEdge(leftrs[0], leftrs[1], leftrs[2], leftrs[3]); }
             }
             if (rs.ContainsKey("top"))
             {
                 int[] toprs = rs["top"];
                 dir[1] = toprs;
-                opts[1] = CalculateDistToPac(toprs[0], toprs[1], toprs[2], toprs[3]);
+                if (dest == 1) { opts[1] = CalculateDistToPac(toprs[0], toprs[1], toprs[2], toprs[3]); }
+                else { opts[1] = CalculateDistToEdge(toprs[0], toprs[1], toprs[2], toprs[3]); }
             }
             if (rs.ContainsKey("right"))
             {
                 int[] rightrs = rs["right"];
                 dir[2] = rightrs;
-                opts[2] = CalculateDistToPac(rightrs[0], rightrs[1], rightrs[2], rightrs[3]);
+                if (dest == 1) { opts[2] = CalculateDistToPac(rightrs[0], rightrs[1], rightrs[2], rightrs[3]); }
+                else { opts[2] = CalculateDistToEdge(rightrs[0], rightrs[1], rightrs[2], rightrs[3]); }
             }
             if (rs.ContainsKey("bot"))
             {
                 int[] botrs = rs["bot"];
                 dir[3] = botrs;
-                opts[3] = CalculateDistToPac(botrs[0], botrs[1], botrs[2], botrs[3]);
+                if (dest == 1) { opts[3] = CalculateDistToPac(botrs[0], botrs[1], botrs[2], botrs[3]); }
+                else { opts[3] = CalculateDistToEdge(botrs[0], botrs[1], botrs[2], botrs[3]); }
             }
 
             // Path determination for each direction will be in their own methods
@@ -254,7 +284,7 @@ public class GhostController : MonoBehaviour
         // if dir is null, just straight away skip.
         if (bestPath == opts[1] && dir[1] != null)
         {
-            MoveUp(transform, transform.position, dir[1][0], dir[1][1]);
+            MoveUp(transform, transform.position, dir[1][0], dir[1][1], dir[1][2], dir[1][3]);
         }
         else
         {
@@ -262,17 +292,17 @@ public class GhostController : MonoBehaviour
             // If preferred path unable to take, evaluate between the left and right path
             if (bestPath == opts[0] && dir[0] != null)
             {
-                MoveLeft(transform, transform.position, dir[0][0], dir[0][1]);
+                MoveLeft(transform, transform.position, dir[0][0], dir[0][1], dir[0][2], dir[0][3]);
             }
             else if (bestPath == opts[2] && dir[2] != null)
             {
-                MoveRight(transform, transform.position, dir[2][0], dir[2][1]);
+                MoveRight(transform, transform.position, dir[2][0], dir[2][1], dir[2][2], dir[2][3]);
             }
             else
             {
                 // Worst comes to worst, we have to backtrack (if we reached here, means this is the only path)
                 // As there will always at least be a path
-                MoveBtm(transform, transform.position, dir[3][0], dir[3][1]);
+                MoveBtm(transform, transform.position, dir[3][0], dir[3][1], dir[3][2], dir[3][3]);
             }
         }
     }
@@ -284,22 +314,22 @@ public class GhostController : MonoBehaviour
         bestPath = GetBestPath(opts[3], opts[0], opts[1]);
         if (bestPath == opts[0] && dir[0] != null)
         {
-            MoveLeft(transform, transform.position, dir[0][0], dir[0][1]);
+            MoveLeft(transform, transform.position, dir[0][0], dir[0][1], dir[0][2], dir[0][3]);
         }
         else
         {
             bestPath = GetBestPath(opts[3], -1, opts[1]);
             if (bestPath == opts[1] && dir[1] != null)
             {
-                MoveUp(transform, transform.position, dir[1][0], dir[1][1]);
+                MoveUp(transform, transform.position, dir[1][0], dir[1][1], dir[1][2], dir[1][3]);
             }
             else if (bestPath == opts[3] && dir[3] != null)
             {
-                MoveBtm(transform, transform.position, dir[3][0], dir[3][1]);
+                MoveBtm(transform, transform.position, dir[3][0], dir[3][1], dir[3][2], dir[3][3]);
             }
             else
             {
-                MoveRight(transform, transform.position, dir[2][0], dir[2][1]);
+                MoveRight(transform, transform.position, dir[2][0], dir[2][1], dir[2][2], dir[2][3]);
             }
         }
     }
@@ -311,22 +341,22 @@ public class GhostController : MonoBehaviour
         bestPath = GetBestPath(opts[2], opts[3], opts[0]);
         if (bestPath == opts[3] && dir[3] != null)
         {
-            MoveBtm(transform, transform.position, dir[3][0], dir[3][1]);
+            MoveBtm(transform, transform.position, dir[3][0], dir[3][1], dir[3][2], dir[3][3]);
         }
         else
         {
             bestPath = GetBestPath(opts[2], -1, opts[0]);
             if (bestPath == opts[2] && dir[2] != null)
             {
-                MoveRight(transform, transform.position, dir[2][0], dir[2][1]);
+                MoveRight(transform, transform.position, dir[2][0], dir[2][1], dir[2][2], dir[2][3]);
             }
             else if (bestPath == opts[0] && dir[0] != null)
             {
-                MoveLeft(transform, transform.position, dir[0][0], dir[0][1]);
+                MoveLeft(transform, transform.position, dir[0][0], dir[0][1], dir[0][2], dir[0][3]);
             }
             else
             {
-                MoveUp(transform, transform.position, dir[1][0], dir[1][1]);
+                MoveUp(transform, transform.position, dir[1][0], dir[1][1], dir[1][2], dir[1][3]);
             }
         }
     }
@@ -338,22 +368,22 @@ public class GhostController : MonoBehaviour
         bestPath = GetBestPath(opts[1], opts[2], opts[3]);
         if (bestPath == opts[2] && dir[2] != null)
         {
-            MoveRight(transform, transform.position, dir[2][0], dir[2][1]);
+            MoveRight(transform, transform.position, dir[2][0], dir[2][1], dir[2][2], dir[2][3]);
         }
         else
         {
             bestPath = GetBestPath(opts[1], -1, opts[3]);
             if (bestPath == opts[1] && dir[1] != null)
             {
-                MoveUp(transform, transform.position, dir[1][0], dir[1][1]);
+                MoveUp(transform, transform.position, dir[1][0], dir[1][1], dir[1][2], dir[1][3]);
             }
             else if (bestPath == opts[3] && dir[3] != null)
             {
-                MoveBtm(transform, transform.position, dir[3][0], dir[3][1]);
+                MoveBtm(transform, transform.position, dir[3][0], dir[3][1], dir[3][2], dir[3][3]);
             }
             else
             {
-                MoveLeft(transform, transform.position, dir[0][0], dir[0][1]);
+                MoveLeft(transform, transform.position, dir[0][0], dir[0][1], dir[0][2], dir[0][3]);
             }
         }
     }
@@ -363,6 +393,8 @@ public class GhostController : MonoBehaviour
         if (bunnyType == 1) { return MovementType1(op1, op2, op3); }
         else if (bunnyType == 2) { return MovementType2(op1, op2, op3); }
         else if (bunnyType == 3) { return MovementType3(op1, op2, op3); }
+        // We return min dist to the edge
+        else if (bunnyType == 4 && !hasBeginCycle) { return MovementType2(op1, op2, op3); }
         else { return MovementType4(op1, op2, op3); }
     }
 
@@ -455,6 +487,7 @@ public class GhostController : MonoBehaviour
         return diffX * diffX + diffY * diffY; // don't need to sqrt, it is still unique
     }
 
+    // Get available paths for current position
     private Dictionary<string, int[]> GetAvailablePaths(int row, int col) 
     {
         // there will also be at least 1 available path (a corner, will give one path only)
@@ -485,23 +518,19 @@ public class GhostController : MonoBehaviour
         int fH = (flippedH) ? 1 : 0;
         int fV = (flippedV) ? 1 : 0;
 
-        if (flippedH) { adjRow += 1; }
+        if (fH == 1) { adjRow += 1; }
         else { adjRow -= 1; }
 
-        int rs = CheckWalkable(row, col);
+        int rs = CheckWalkable(adjRow, adjCol);
 
-        if (rs != 0) 
-        { 
-            if (rs == 2) // A flip must be done
-            {
-                fH = Mathf.Abs(fH - 1);
-                return new int[] { adjRow, adjCol, fH, fV }; 
-                // 2nd and 3rd index will help indicate which quad this coordinate belongs to
-            }
-            else
-            {
-                return new int[] { adjRow, adjCol, fH, fV }; 
-            }
+        if (rs != 0)
+        {
+            if (rs == 2) { fH = Mathf.Abs(fH - 1); }
+
+            if (fH == 1) { row += 1; }
+            else { row -= 1; }
+
+            return new int[] { row, col, fH, fV };
         }
         else
         {
@@ -516,22 +545,23 @@ public class GhostController : MonoBehaviour
         int fH = (flippedH) ? 1 : 0;
         int fV = (flippedV) ? 1 : 0;
 
-        if (flippedH) { adjRow -= 1; }
+        // Gets the btm coordinate
+        if (fH == 1) { adjRow -= 1; }
         else { adjRow += 1; }
 
-        int rs = CheckWalkable(row, col);
+        // Checks if the adjacent coordinate is valid
+        int rs = CheckWalkable(adjRow, adjCol);
 
+        // if valid
         if (rs != 0)
         {
-            if (rs == 2)
-            {
-                fH = Mathf.Abs(fH - 1);
-                return new int[] { adjRow, adjCol, fH, fV };
-            }
-            else
-            {
-                return new int[] { adjRow, adjCol, fH, fV };
-            }
+            if (rs == 2) { fH = Mathf.Abs(fH - 1); }
+
+            // Gets the actual btm coordinates
+            if (fH == 1) { row -= 1; }
+            else { row += 1; }
+
+            return new int[] { row, col, fH, fV };
         }
         else
         {
@@ -546,17 +576,18 @@ public class GhostController : MonoBehaviour
         int fH = (flippedH) ? 1 : 0;
         int fV = (flippedV) ? 1 : 0;
 
-        if (flippedV) { adjCol += 1; }
+        if (fV == 1) { adjCol += 1; }
         else { adjCol -= 1; }
 
-        int rs = CheckWalkable(row, col);
+        int rs = CheckWalkable(adjRow, adjCol);
 
         if (rs != 0)
         {
-            if (rs == 3)
-            {
+            if (rs == 3) 
+            { 
                 fV = Mathf.Abs(fV - 1);
-                return new int[] { adjRow, adjCol, fH, fV };
+
+                return new int[] { row, col, fH, fV };
             }
             else
             {
@@ -576,18 +607,19 @@ public class GhostController : MonoBehaviour
         int fH = (flippedH) ? 1 : 0;
         int fV = (flippedV) ? 1 : 0;
 
-        if (flippedV) { adjCol -= 1; }
+        if (fV == 1) { adjCol -= 1; }
         else { adjCol += 1; }
 
-        int rs = CheckWalkable(row, col);
+        int rs = CheckWalkable(adjRow, adjCol);
 
         if (rs != 0)
         {
-            if (rs == 3)
-            {
+            if (rs == 3) 
+            { 
                 fV = Mathf.Abs(fV - 1);
-                return new int[] { adjRow, adjCol, fH, fV };
-            }
+
+                return new int[] { row, col, fH, fV };
+            } // flip fV 
             else
             {
                 return new int[] { adjRow, adjCol, fH, fV };
@@ -599,36 +631,48 @@ public class GhostController : MonoBehaviour
         }
     }
 
-    private void MoveUp(Transform transform, Vector3 pos, int row, int col)
+    private void MoveUp(Transform transform, Vector3 pos, int row, int col, int fH, int fV)
     {
-        transform.eulerAngles = new Vector3(0, 0, 90.0f);
+        currentDirection = "W";
+        transform.eulerAngles = new Vector3(0, 0, 270.0f);
         tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y + 1.0f), 0.7f);
         currentPos[0] = row;
         currentPos[1] = col;
+        flippedH = (fH == 1);
+        flippedV = (fV == 1);
     }
 
-    private void MoveBtm(Transform transform, Vector3 pos, int row, int col)
+    private void MoveBtm(Transform transform, Vector3 pos, int row, int col, int fH, int fV)
     {
-        transform.eulerAngles = new Vector3(0, 0, 270.0f);
+        currentDirection = "S";
+        transform.eulerAngles = new Vector3(0, 0, 90.0f);
         tweener.AddTween(transform, pos, new Vector2(pos.x, pos.y - 1.0f), 0.7f);
         currentPos[0] = row;
         currentPos[1] = col;
+        flippedH = (fH == 1);
+        flippedV = (fV == 1);
     }
 
-    private void MoveLeft(Transform transform, Vector3 pos, int row, int col)
+    private void MoveLeft(Transform transform, Vector3 pos, int row, int col, int fH, int fV)
     {
-        transform.eulerAngles = new Vector3(0, 180.0f, 0);
+        currentDirection = "A";
+        transform.eulerAngles = new Vector3(0, 0, 0);
         tweener.AddTween(transform, pos, new Vector2(pos.x - 1.0f, pos.y), 0.7f);
         currentPos[0] = row;
         currentPos[1] = col;
+        flippedH = (fH == 1);
+        flippedV = (fV == 1);
     }
 
-    private void MoveRight(Transform transform, Vector3 pos, int row, int col)
+    private void MoveRight(Transform transform, Vector3 pos, int row, int col, int fH, int fV)
     {
-        transform.eulerAngles = new Vector3(0, 0, 0);
+        currentDirection = "D";
+        transform.eulerAngles = new Vector3(0, 180.0f, 0);
         tweener.AddTween(transform, pos, new Vector2(pos.x + 1.0f, pos.y), 0.7f);
         currentPos[0] = row;
         currentPos[1] = col;
+        flippedH = (fH == 1);
+        flippedV = (fV == 1);
     }
 
     // 0 -  false, 1 - true, 2 -  true + flipH, 3 - true + flipV
@@ -641,14 +685,17 @@ public class GhostController : MonoBehaviour
         }
 
         // Check if it is spawn entrance (we want to prevent them from re-entering)
-        if (IsSpawnEntrance(row, col)) { return 0; }
+        if (hasLeftSpawn)
+        {
+            if (IsSpawnEntrance(col, row)) { return 0; }
+        }
 
         // Check if about to enter teleporter entrance
         if (IsEnteringTeleporter(col, row)) { return 0; }
 
         // Check if entering a mirrored quadrant 
         int rs = IsEnteringMirrored(col, row);
-
+        
         if (rs == 1) // set FlipH to indicate that we are now in the flipped quadrant
         {
             return 2; // If we are entering a mirrored quadrant, it is guaranteed that it is walkable
@@ -669,7 +716,8 @@ public class GhostController : MonoBehaviour
     // Check if it is a spawn entrance
     private bool IsSpawnEntrance(int di, int dj)
     {
-        return dj != spawnEntryPos[0]; // hard-coded entrance y-axis coordinate since spawn area won't be changed
+        // hard-coded entrance coordinates since spawn area won't be changed
+        return (dj == spawnEntryPos[0]) && (di == spawnEntryPos[1]); 
     }
 
     // If it is out of bounds aka outside the map
@@ -695,15 +743,36 @@ public class GhostController : MonoBehaviour
     {
         if (di == 0 || dj == 0)
         {
-            return false; // Entrance to a teleporter cannot be on the edge of the map
+            return false; // Entrance to a teleporter cannot be on the edge of the map or 
         }
+
+        bool fH = flippedH;
+        bool fV = flippedV;
+
+        if (dj >= map.GetLength(0)) { dj = 13; fH = !fH; }
+        if (di >= map.GetLength(1)) { di = 13; fV = !fV; }
 
         // Get the adjacent values
         // An entrance will have the 2 outer corners (1) besides it (left + right) or (top + btm)
-        int top = map[dj - 1, di];
-        int btm = map[dj + 1, di];
-        int left = map[dj, di - 1];
-        int right = map[dj, di + 1];
+        int top;
+        if (dj == mapRows - 1) { top = map[dj - 1, di]; }
+        else if (fH) { top = map[dj + 1, di]; }
+        else { top = map[dj - 1, di]; }
+
+        int btm;
+        if (dj == mapRows - 1) { btm = map[dj - 1, di]; }
+        else if (fH) { btm = map[dj - 1, di]; }
+        else { btm = map[dj + 1, di]; }
+
+        int left;
+        if (fV && di == mapCols - 1) { left = map[dj, di]; }
+        else if (fV) { left = map[dj, di + 1]; }
+        else { left = map[dj, di - 1]; }
+
+        int right;
+        if (!fV && di == mapCols - 1) { right = map[dj, di]; }
+        else if (fV) { right = map[dj, di - 1]; }
+        else { right = map[dj, di + 1]; }
 
         if (top == 1 && btm == 1) // top and btm pattern means it is a left/right entrance to the teleporter
         {

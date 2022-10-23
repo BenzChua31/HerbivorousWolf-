@@ -197,6 +197,7 @@ GameObject:
   - component: {fileID: 710062188623512989}
   - component: {fileID: 710062188623512988}
   - component: {fileID: 4711157496803674944}
+  - component: {fileID: 35326180640799021}
   m_Layer: 0
   m_Name: IGBunny
   m_TagString: Bunny
@@ -341,6 +342,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9084e4dff5d6faf4e81f63ea98c7e4a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bunny: {fileID: 0}
 --- !u!114 &4711157496803674944
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -351,5 +353,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4447a38e91eb42343bff7d2663ff78cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &35326180640799021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7647246825203183210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22f44eb8e52a25e4aadeee33c80dd02e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
