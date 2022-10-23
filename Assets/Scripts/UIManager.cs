@@ -48,6 +48,9 @@ public class UIManager : MonoBehaviour
         SceneManager.sceneLoaded += OnSceneLoaded;
         countDownTime = audioManager.audios[0].clip.length;
         titleOutline = GameObject.FindWithTag("MenuTitle").GetComponent<Outline>();
+        highScore = GameObject.FindWithTag("HighScore").GetComponent<Text>();
+        bestTime = GameObject.FindWithTag("BestTime").GetComponent<Text>();
+        UpdateBestScoreAndTime();
         StartCoroutine(FlashingTitle());
     }
 

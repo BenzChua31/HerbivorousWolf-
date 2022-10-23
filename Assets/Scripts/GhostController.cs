@@ -65,12 +65,10 @@ public class GhostController : MonoBehaviour
 
         if (!quit && gameStarted)
         {
-            if (bunnyType == 1) { Debug.Log(currentPos[0] + " " + currentPos[1]); }
-
             if (!hasLeftSpawn) { LeaveSpawn(); }
             else
             {
-                if (bunnyType == 4 && currentPos[0] == 1 && currentPos[1] == 1 && flippedH && !flippedV)
+                if (bunnyType == 4 && currentPos[0] == 1 && currentPos[1] == 1 && flippedH && flippedV)
                 {
                     hasBeginCycle = true; // get it to start its around-the-map cycle
                 }
@@ -446,21 +444,21 @@ public class GhostController : MonoBehaviour
     // For type4 bunny to move to the bottom left corner (1, 1), fH = true, to begin its clockwise cycle
     private int CalculateDistToEdge(int row, int col, int fH, int fV)
     {
-        int blR = 1;
-        int blC = 1;
-        int blFH = 1;
-        int blFV = 0;
+        int bRR = 1;
+        int bRC = 1;
+        int bRFH = 1;
+        int bRFV = 1;
 
         int diffX;
         int diffY;
 
         // final index 13 + final index 14 (13 + 14 = 27)
-        if (fH == blFH) { diffY = Mathf.Abs(row - blR); }
-        else { diffY = 27 - blR - row + 1; }
+        if (fH == bRFH) { diffY = Mathf.Abs(row - bRR); }
+        else { diffY = 27 - bRR - row + 1; }
 
         // final index 13 for both sides (13 + 13 = 26)
-        if (fV == blFV) { diffX = Mathf.Abs(col - blC); }
-        else { diffX = 26 - blC - col + 1; }
+        if (fV == bRFV) { diffX = Mathf.Abs(col - bRC); }
+        else { diffX = 26 - bRC - col + 1; }
 
         return diffX * diffX + diffY * diffY; // don't need to sqrt, it is still unique
     }
