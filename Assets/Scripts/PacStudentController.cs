@@ -533,14 +533,23 @@ public class PacStudentController : MonoBehaviour
 
     private void BerryCount()
     {
+        int extraBerriesToDelete = 0;
         berryCount = 0;
         for (int j = 0; j < map.GetLength(0); j++) 
         {
             for (int i = 0; i < map.GetLength(1); i++) 
             {
-                if (map[j, i] == 5) { berryCount++; }
+                if (map[j, i] == 5) 
+                { 
+                    berryCount++; 
+                    if (j == map.GetLength(0) - 1)
+                    {
+                        extraBerriesToDelete++;
+                    }
+                }
             }
         }
+        berryCount = (berryCount * 4) - (extraBerriesToDelete * 2);
     }
 
     public void ConsumeBerry() 

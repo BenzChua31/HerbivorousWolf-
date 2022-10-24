@@ -18,6 +18,7 @@ public class GhostController : MonoBehaviour
     private bool isBlinking; // If the timer is blinking
     public static bool quit; // If the game has quit, we want to disable all movement
     public static bool gameStarted; // If the game has started (should start after countdown)
+    public bool isDeciding = true; // if it is allowed to make a decision, used to disable decision-making when dead
 
     private float scaredSeconds = 10;
     private int bunnyType; // 1 : Further, 2 : Closer, 3 : Random, 4 : Clockwise around map along outside of map
@@ -32,7 +33,9 @@ public class GhostController : MonoBehaviour
     // I know enums are way better but
     // I've got other assignments, i will make sure to implement them itf
     private string currentDirection; 
-    private Vector3 startPosition;
+    private Vector3 startPosition; // For Vector3 position
+    private int[] startCoordinate; // For 2D map position
+    private bool[] startQuadrant; // For flippedH & flippedV status
 
     // Start is called before the first frame update
     void Start()
@@ -63,7 +66,7 @@ public class GhostController : MonoBehaviour
             SetScaredTimer();
         }
 
-        if (!quit && gameStarted)
+        if (!quit && gameStarted && isDeciding)
         {
             if (!hasLeftSpawn) { LeaveSpawn(); }
             else
@@ -115,28 +118,36 @@ public class GhostController : MonoBehaviour
         if (bunny.name.Equals("Bunny1")) 
         { 
             currentPos = new int[] { 13, 13 };
+            startCoordinate = new int[] { 13, 13 };
             flippedH = false; flippedV = false;
+            startQuadrant = new bool[] { false, false };
             bunnyType = 1;
             currentDirection = "W";
         }
         else if (bunny.name.Equals("Bunny2")) 
         { 
             currentPos = new int[] { 13, 13 };
+            startCoordinate = new int[] { 13, 13 };
             flippedH = false; flippedV = true;
+            startQuadrant = new bool[] { false, true };
             bunnyType = 2;
             currentDirection = "W";
         }
         else if (bunny.name.Equals("Bunny3")) 
         { 
             currentPos = new int[] { 14, 13 };
+            startCoordinate = new int[] { 14, 13 };
             flippedH = false; flippedV = false;
+            startQuadrant = new bool[] { false, false };
             bunnyType = 3;
             currentDirection = "S";
         }
         else if (bunny.name.Equals("Bunny4")) 
         {
             currentPos = new int[] { 14, 13 };
+            startCoordinate = new int[] { 14, 13 };
             flippedH = false; flippedV = true;
+            startQuadrant = new bool[] { false, true };
             bunnyType = 4;
             currentDirection = "S";
         }
@@ -196,25 +207,53 @@ public class GhostController : MonoBehaviour
 
     public void PlayBunnyFuneral()
     {
+        isDeciding = false;
+        hasLeftSpawn = false;
+        tweener.RemoveTweens();
+        if (bunnyType == 4) { hasBeginCycle = false; }
         animator.SetBool("Dead", true);
         audioManager.PlayBunnyDeath();
-        StartCoroutine(RemoveBunny(audioManager.audios[10].clip.length));
+        StartCoroutine(RespawnBunny(audioManager.audios[10].clip.length));
     }
 
-    IEnumerator RemoveBunny(float duration) // Temporary
+    IEnumerator RespawnBunny(float duration) // Temporary
     {
-        yield return new WaitForSeconds(duration);
-        Destroy(gameObject);
+        // song duration is 3.20s long
+        yield return new WaitForSeconds(duration + 1.80f);
+
+        CircleCollider2D collider = bunny.GetComponent<CircleCollider2D>();
+
+        collider.enabled = false;
+        tweener.AddTween(transform, transform.position, startPosition, 3.0f);
+
+        yield return new WaitForSeconds(3.0f);
+
+        animator.SetBool("Dead", false);
+        collider.enabled = true;
+        currentPos[0] = startCoordinate[0];
+        currentPos[1] = startCoordinate[1];
+        flippedH = startQuadrant[0];
+        flippedV = startQuadrant[1];
+        bunny.transform.rotation = Quaternion.identity;
+
+        yield return new WaitForSeconds(0.5f); 
+        // just give it some delay before it starts moving, feels more natural
+
+        isDeciding = true;
     }
 
     // WARNING: The algorithm implemented is not fast or save as much space
-    // I couldn't scratch my head enough to come up with a faster algorithm
-    // Thought about PriorityQueues w/ custom comparables but nah
-    // Thought about using Sort() but that is worst 
+ 
+    // Thought about using DFS and BFS to search for the entire path on each fram
+        // but too much computation needed for each frame
+
     // Thought about A* but not quite sure how to implement it for a moving target 
        // Update: it is possible but it's too late, I already implemented an algorithm and got other assignments
        // during holidays i guess 
+
     // Current Algorithm is BFS: where we determine the next adjacent cell to move to based on DIST
+        // but it doesn't determine the entire path for each frame, it only determines the next adjacent path to take
+        // based on Dist
     private void DeterminePath(int dest) // dest to determine if calculateDist to edge or pacStudent
     {
         Transform transform = gameObject.transform;
@@ -388,6 +427,13 @@ public class GhostController : MonoBehaviour
 
     private int GetBestPath(int op1, int op2, int op3)
     {
+        if (isScared && bunnyType != 4) { return MovementType1(op1, op2, op3); }
+        // Why I excluded 4th bunny from changing its movementtype to running away from pacstudent
+        // because it will be extra PAIN to reset it back near the walls and continue its clockwise 
+        // cycle... I would need to implement a BFS algorithm (best-suited) to detect the closest 1 and 2 
+        // 1 = outer corner, 2 = outer wall
+        // And since I'm busy with other assignments, I think I will do it during the holidays
+
         if (bunnyType == 1) { return MovementType1(op1, op2, op3); }
         else if (bunnyType == 2) { return MovementType2(op1, op2, op3); }
         else if (bunnyType == 3) { return MovementType3(op1, op2, op3); }
@@ -693,21 +739,22 @@ public class GhostController : MonoBehaviour
 
         // Check if entering a mirrored quadrant 
         int rs = IsEnteringMirrored(col, row);
+
+        int dest;
+        if (rs == 1) { dest = map[13, col]; } // flipH
+        else if (rs == 2) { dest = map[row, 13]; } // flipV
+        else { dest = map[row, col]; }
         
-        if (rs == 1) // set FlipH to indicate that we are now in the flipped quadrant
-        {
-            return 2; // If we are entering a mirrored quadrant, it is guaranteed that it is walkable
-        }
-        else if (rs == 2) // set FlipV to indicate that we are now in the flipped quadrant
-        {
-            return 3;
-        }
-        else
-        { // If it is just regular movement within a quadrant, we then check for walls etc... 
-            int dest = map[row, col];
-            if (dest != 1 && dest != 2 && dest != 3 && dest != 4 && dest != 7) { return 1; }
-            else { return 0; }
-        }
+        if (dest != 1 && dest != 2 && dest != 3 && dest != 4 && dest != 7) { return rs + 1; }
+        else { return 0; }
+
+        // The reason why we have to add a check to see if it is an obstacle is because
+        // the bunny is checking adjacent paths every frame
+        // in cases where the adjacent tile is IN ANOTHER quadrant...
+        // ex: 15, 8 is the btm adjacent cell for 14 8
+        // and 15, 8 will be deem as rs == 1, and if we immediately return 2
+        // that won't work since 15, 8 aka 13, 8 is actually not walkable
+
 
     }
 
