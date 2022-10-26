@@ -7,32 +7,11 @@ public class LevelGenerator : MonoBehaviour
 
     [SerializeField] private GameObject levelToRemove;
     [SerializeField] private List<GameObject> walls;
-    private static int[,] map;
+    private static int[,] map = MapsManager.originalMap;
     // Position relative to topL quadrant
     private const float topLx = -20.5f;
     private const float topLy = 10.5f;
 
-    private void Awake()
-    {
-        map = new int[,]
-                    {
-                    {1,2,2,2,2,2,2,2,2,2,2,2,2,7},
-                    {2,5,5,5,5,5,5,5,5,5,5,5,5,4},
-                    {2,5,3,4,4,3,5,3,4,4,4,3,5,4},
-                    {2,6,4,0,0,4,5,4,0,0,0,4,5,4},
-                    {2,5,3,4,4,3,5,3,4,4,4,3,5,3},
-                    {2,5,5,5,5,5,5,5,5,5,5,5,5,5},
-                    {2,5,3,4,4,3,5,3,3,5,3,4,4,4},
-                    {2,5,3,4,4,3,5,4,4,5,3,4,4,3},
-                    {2,5,5,5,5,5,5,4,4,5,5,5,5,4},
-                    {1,2,2,2,2,1,5,4,3,4,4,3,0,4},
-                    {0,0,0,0,0,2,5,4,3,4,4,3,0,3},
-                    {0,0,0,0,0,2,5,4,4,0,0,0,0,0},
-                    {0,0,0,0,0,2,5,4,4,0,3,4,4,0},
-                    {2,2,2,2,2,1,5,3,3,0,4,0,0,0}, 
-                    {0,0,0,0,0,0,5,0,0,0,4,0,0,0}, 
-                    };
-    }
     // Calculating distance between two positions eachh in different quadrants (14 = final index of row, 13 = final index of col)
     // (11, 10) (11, 10) || 13 - 10 = 3 || 13 - 10 = 3 || 3 + 3 + 1 = 7 (Calculating for Column Difference x-axis)
     // (14, 9) (13, 9) || 14 - 14 = 0 || 13 - 13 = 0 || 0 + 0 + 1 = 3 (Calculating for Row Difference y-axis)
@@ -278,26 +257,45 @@ public class LevelGenerator : MonoBehaviour
     private int CheckOuterW(int i, int j)
     {
         int[] dir = { -1, 0, 1, 0, -1 };
-        for (int x = 0; x < 4; x++)
+        for (int x = 0; x < 2; x++)
         {
-            int dj = j + dir[x];
-            int di = i + dir[x + 1];
+            int fj = j + dir[x];
+            int fi = i + dir[x + 1];
+            int sj = j + dir[x + 2];
+            int si = i + dir[x + 3];
+
+            bool frs = IsOutOfBounds(fi, fj);
+            bool srs = IsOutOfBounds(sj, si);
 
             // Check if coordinates are legit
-            if (IsOutOfBounds(di, dj))
+            if (frs && srs)
             {
                 continue;
             }
 
-            int val = map[dj, di];
-
-            // Check if rotation needed (1 for yes), (0 for no)
-            // Assuming walls/corners/tconnectors adjacent to it are connected to it. 
-            if (val == 1 || val == 2 || val == 7)
+            // Top is out of bounds and bot has a 1, 2 or 7 
+            // means that it is a wall on the edge of the map (used for teleporters)
+            if (frs) 
             {
-                // If top/bot exists, then no rotation (0), else (1)
-                return (x % 2 == 0) ? 0 : 1;
+                int sval = map[sj, si];
+
+                if (sval == 1 || sval == 2 || sval == 7)
+                {
+                    // If top/bot exists, then no rotation (0), else (1)
+                    return (x % 2 == 0) ? 0 : 1;
+                }
             }
+            else
+            {
+                int fval = map[fj, fi];
+
+                if (fval == 1 || fval == 2 || fval == 7)
+                {
+                    // If top/bot exists, then no rotation (0), else (1)
+                    return (x % 2 == 0) ? 0 : 1;
+                }
+            }
+
         }
         return -1;
     }
@@ -325,6 +323,7 @@ public class LevelGenerator : MonoBehaviour
             int sval = map[sj, si];
 
             // Assuming corners will never connect to another corner or tconnectors
+            // and if it does, the corners are connected to form a U shape than a Z shape
             if (fval == 2 && sval == 2) 
             {
                 if (x == 0) return 1; // Top & Right - 1
@@ -440,16 +439,21 @@ public class LevelGenerator : MonoBehaviour
         return (di < 0 || di >= map.GetLength(1) || dj < 0 || dj >= map.GetLength(0));
     }
 
-    public static int[,] getMap()
+    public static int[,] GetMap()
     {
         return map.Clone() as int[,];
         // return a copy of the array
         // int are value type so this works as a deep copy
     }
 
-    public static void setMap(int[,] newMap)
+    public static void SetMap(int[,] newMap)
     {
         map = newMap;
+    }
+
+    public static void NewRandomMap(bool reset)
+    {
+        map = MapsManager.GetNewMap(reset);
     }
 
 }

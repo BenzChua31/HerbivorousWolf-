@@ -52,7 +52,7 @@ public class GhostController : MonoBehaviour
         uiManager = managers.GetComponent<UIManager>();
         audioManager = managers.GetComponent<AudioManager>();
         wolfController = GameObject.FindWithTag("WolfController").GetComponent<PacStudentController>();
-        map = LevelGenerator.getMap();
+        map = LevelGenerator.GetMap();
         mapRows = map.GetLength(0);
         mapCols = map.GetLength(1);
         InitializeBunnyPosition();

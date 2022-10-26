@@ -217,7 +217,7 @@ GameObject:
   - component: {fileID: 72638689}
   m_Layer: 5
   m_Name: Level2
-  m_TagString: Untagged
+  m_TagString: Lvl2Btn
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1540,7 +1540,7 @@ GameObject:
   - component: {fileID: 788043537}
   m_Layer: 5
   m_Name: Tip
-  m_TagString: Untagged
+  m_TagString: Tip
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

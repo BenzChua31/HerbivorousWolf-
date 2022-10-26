@@ -29,7 +29,7 @@ public class PacStudentController : MonoBehaviour
     {
         quit = false;
         tweener = gameObject.GetComponent<Tweener>();
-        map = LevelGenerator.getMap();
+        map = LevelGenerator.GetMap();
         audioManager = GameObject.FindWithTag("Managers").GetComponent<AudioManager>();
         uiManager = GameObject.FindWithTag("Managers").GetComponent<UIManager>();
         animator = wolf.GetComponent<Animator>();

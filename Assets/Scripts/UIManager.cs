@@ -41,6 +41,7 @@ public class UIManager : MonoBehaviour
     {
         livesImg = new List<Image>();
         GameObject.FindWithTag("Lvl1Btn").GetComponent<Button>().onClick.AddListener(LoadFirst);
+        GameObject.FindWithTag("Lvl2Btn").GetComponent<Button>().onClick.AddListener(LoadSecond);
         // Sets the top and bottom of the loadingTitle
         loadingTitle.offsetMin = new Vector2(loadingTitle.offsetMin.x, -loadingCanva.rect.height);
         loadingTitle.offsetMax = new Vector2(loadingTitle.offsetMax.x, -loadingCanva.rect.height);
@@ -72,6 +73,7 @@ public class UIManager : MonoBehaviour
 
     public void Exit()
     {
+        countDownTime = 99.0f; // Just hard-code set it to 99s so that we can guarantee enough time to delete countDownTimer obj
         PacStudentController.quit = true;
         GhostController.quit = true;
         audioManager.PlayMainMenu();
@@ -80,6 +82,15 @@ public class UIManager : MonoBehaviour
 
     public void LoadFirst()
     {
+        GameObject.FindWithTag("Tip").GetComponent<Text>().text = "Tip: Don't die!";
+        LevelGenerator.NewRandomMap(true);
+        ShowLoading(0);
+    }
+
+    public void LoadSecond()
+    {
+        GameObject.FindWithTag("Tip").GetComponent<Text>().text = "Note: There are 3 different playable maps in total!";
+        LevelGenerator.NewRandomMap(false);
         StopCoroutine(FlashingTitle());
         ShowLoading(0);
     }
@@ -143,6 +154,7 @@ public class UIManager : MonoBehaviour
         {
             GameObject.FindWithTag("Exit").GetComponent<Button>().onClick.AddListener(Exit);
             countDown = GameObject.FindWithTag("Countdown").GetComponent<Text>();
+            countDownTime = audioManager.audios[0].clip.length;
             scorePts = GameObject.FindWithTag("Score").GetComponent<Text>();
             gameTimer = GameObject.FindWithTag("GameTimer").GetComponent<Text>();
             scaredTimer = GameObject.FindWithTag("ScaredTimer").GetComponent<Text>();
@@ -150,6 +162,7 @@ public class UIManager : MonoBehaviour
             scaredLabel = GameObject.Find("ScaredTimer").GetComponent<Text>();
             gameOver = GameObject.FindWithTag("GameOver").GetComponent<Text>();
             gameOver.enabled = false;
+            livesImg = new List<Image>();
             foreach (GameObject go in GameObject.FindGameObjectsWithTag("Life")) { livesImg.Add(go.GetComponent<Image>()); }
             score = 0;
             gameSeconds = 0;
@@ -158,6 +171,7 @@ public class UIManager : MonoBehaviour
         else if (scene.buildIndex == 1)
         {
             GameObject.FindWithTag("Lvl1Btn").GetComponent<Button>().onClick.AddListener(LoadFirst);
+            GameObject.FindWithTag("Lvl2Btn").GetComponent<Button>().onClick.AddListener(LoadSecond);
             titleOutline = GameObject.FindWithTag("MenuTitle").GetComponent<Outline>();
             highScore = GameObject.FindWithTag("HighScore").GetComponent<Text>();
             bestTime = GameObject.FindWithTag("BestTime").GetComponent<Text>();
@@ -215,19 +229,22 @@ public class UIManager : MonoBehaviour
 
     private void SetCountDown(int second)
     {
-        if (!countDown.enabled && second >= 0) { countDown.enabled = true; }
-        else if (countDown.enabled && second < 0) 
-        { 
-            countDown.enabled = false;
-            startCountdown = false;
-            EnableGame();
-        }
-
-        if (second >= 0)
+        if (countDown != null)
         {
-            if (second < 1) { countDown.text = "GO!"; }
-            else if (second > 3) { countDown.text = ""; }
-            else { countDown.text = second.ToString(); }
+            if (!countDown.enabled && second >= 0) { countDown.enabled = true; }
+            else if (countDown.enabled && second < 0)
+            {
+                countDown.enabled = false;
+                startCountdown = false;
+                EnableGame();
+            }
+
+            if (second >= 0)
+            {
+                if (second < 1) { countDown.text = "GO!"; }
+                else if (second > 3) { countDown.text = ""; }
+                else { countDown.text = second.ToString(); }
+            }
         }
     }
 
