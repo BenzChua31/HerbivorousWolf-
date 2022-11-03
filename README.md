@@ -1,19 +1,19 @@
 # HerbivorousWolf-
 Intro to Game Development - Assignment 3 (Game Recreation)
 
-Estimated Total Hrs Invested: 50hrs 
+**Estimated Total Hrs Invested:** 50hrs 
 
-Theme: Evil Bunnies and the WereWolf
+**Theme:** Evil Bunnies and the WereWolf
 
-Story:
+**Story:**
 
 There was once a wolf who had been raised as a herbivore. Every day, it ate berries until a horde of evil bunnies invaded its home. Due to his lack of bloodlust, the bunnies displayed no fear and ganged up on him. Until he has had enough of being a herbivore, he decided to embark on a new adventure as a carnivore. Consuming meat and strengthening its resolve to assassinate anyone who gets in its way. 
 
-Description: 
+**Description:**
 
 This is a replica of the classic Pac-Man game. Similar to the original, the player will have to consume all the berries in the shortest time possible whilst avoiding the deadly bunnies. 
 
-Unique Game Mechanics:
+**Unique Game Mechanics:**
 
 - A special bonus "Golden Orange" will periodically fly across the map. If consumed, the player is rewarded huge pts.  
 
@@ -21,7 +21,7 @@ Unique Game Mechanics:
 
 - 4 Bunnies, each with different Movement: Chase The Wolf, Run From The Wolf, Move Along The Edge of the Map, Random. 
 
-Game Design And Implementation:
+**Game Design And Implementation:**
 As a challenge, Unity Pathfinding, TileMap and other External Libraries were not used.
 
 - The Procedural Map Generator uses basic adjacent tiles checking to determine its rotation. 
